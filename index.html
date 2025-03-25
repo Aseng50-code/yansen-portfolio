@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- AOS CSS -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Personal Portfolio</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- AOS JS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init();
+</script>
+<!-- AOS CSS -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+
+</head>
+<body>
+  <header class="hero">
+    <div class="overlay">
+    <nav class="navbar">
+      <div class="logo">MyPortfolio</div>
+      <ul class="nav-links">
+        <li><a href="#">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#projects">Last Projects</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+
+    <section class="hero-content">
+      <h1>Hello, I'm <span class="highlight">Yansen Maupula</span></h1>
+      <p style="color:yellow">I'm an Approved Chief Engineer in Aramco area specialisize to Work Boat Offshore service boat.
+        </p>
+      <div class="hero-buttons">
+        <a href="#contact" class="btn">Contact Me</a>
+        <a href="files/Yansen_Maupula_CV.pdf" class="btn-outline" download>Download CV</a>
+      </div>
+    </section>
+    </div>
+    </header>
+
+    <section id="about" class="about" data-aos="fade-up">
+        <div class="about-container">
+          <h2>About Me</h2>
+          <div class="about-content">
+            <img src="foto_wisuda.jpg" alt="Foto Saya">
+          <p>
+            Seorang Master Marine Engineer dengan pengalaman lebih dari 10 tahun di industri pelayaran, khususnya dalam operasional kapal di offshore area. Memiliki rekam jejak sebagai approved Chief Engineer di wilayah kerja Aramco, dengan disiplin kerja tinggi dan profesionalisme sebagai nilai utama. Menguasai sistem secara menyeluruh dan memiliki kemampuan penyelesaian masalah yang cepat dan efektif. Berorientasi pada solusi dengan pendekatan kepemimpinan partisipatif, memberikan teladan dalam setiap aspek operasional untuk memastikan efisiensi dan keselamatan kerja.<br>
+“Segala perkara dapat kutanggung di dalam DIA yang memberikan kekuatan kepadaku” <br> menjadi moto dalam memberikan keteguhan dan ketenangan guna menghadapi tuntutan dan tekanan di setiap persoalan.
+
+          </p>
+        </div>
+    </div>
+      </section>
+
+      <section class="skills" id="skills" data-aos="fade-down">
+        <div class="skills-container">
+          <h2>Skills</h2>
+          <ul class="skills-list">
+            <li>Master Marine Engineer</li>
+            <li>HVAC Specialis</li>
+            <li>Anchore Handling</li>
+            <li>Towing / Rig Move</li>
+            <li>Bulk Handling</li>
+            <li>Sub-Sea Service</li>
+            <li>Plan Maintenance System</li>
+            <li>General HSE </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="experience" id="experience" data-aos="fade-up">
+        <div class="experience-container">
+          <h2>Experience</h2>
+          <div class="experience-item">
+            <h3>Chief Engineer – Accomodation Work Barge</h3>
+            <p>Miclyn Express Offshore Company</p>
+            <p>Aramco Area, Saudi Arabia | 2024 - Sekarang</p>
+            <p>Experienced in operating and maintaining offshore vessels under Aramco regulations and standards.</p>
+          </div>
+          <div class="experience-item">
+            <h3>Chief Engineer – Anchore Handling Supply Tug</h3>
+            <p>Pertamina Trans Kontinental Company</p>
+            <p>Pertamina Hulu Energy | 2020 - 2024</p>
+            <p>Experienced in operating and maintaining offshore vessels under Pertamina Hulu Energy regulations and standards.</p>
+          </div>
+          <div class="experience-item">
+            <h3>2nd/Engineer – Anchore Handling Supply Tug</h3>
+            <p>Pertamina Trans Kontinental Company</p>
+            <p>TOTAL | Pertamina Hulu Energy | 2016-2020</p>
+            <p>Experienced in operating and maintaining offshore vessels under Pertamina Hulu Energy regulations and standards.</p>
+          </div>
+        </div>
+      </section>
+      
+      
+     
+      <section id="projects" class="projects" data-aos="fade-down">
+        <div class="projects-container">
+          <h2>Last Projects</h2>
+      
+          <div class="project-list">
+            <div class="project-item">
+              <img src="meo_galaxy.jpg" alt="Project 1">
+              <h3>Miclyn Express Offshore</h3>
+              <p><ul>
+                <li>MEO Galaxy</li>
+                <li>2500 DWT / 3500 BHP Engine</li>
+                <li>Pax Capacity : 150 person</li>
+                <li>Crane Capacity : 25 Ton</li>
+              </ul></p>
+            </div>
+      
+            <div class="project-item">
+              <img src="m_guardian1.jpg" alt="Project 2">
+              <h3>Miclyn Express Offshore</h3>
+              <p><ul>
+                <li>M- Guardian</li>
+                <li>4000 DWT / 4400 BHP Engine</li>
+                <li>Pax Capacity : 200 person</li>
+                <li>Crane Capacity : 40 Ton</li>
+                <li>Fire Fighting System : Type Half</li>
+              </ul></p>
+            </div>
+      
+            
+          </div>
+        </div>
+      </section>
+
+      <section id="gallery" class="gallery-section" data-aos="fade-down">
+        <h2>Gallery</h2>
+        <div class="main-photo">
+            <img id="mainImage" src="foto_wisuda.jpg" alt="Wisuda">
+            </div>
+          
+            <div class="thumbnail-wrapper">
+                <button class="scroll-btn left" onclick="scrollThumbnails(-1)">←</button>
+          
+                <div class="thumbnail-scroll" id="thumbnail-scroll">
+            <img src="foto_wisuda.jpg" alt="Galeri 1" onclick="changeImage(this)">
+            <img src="papi1.jpg" alt="Galeri 2" onclick="changeImage(this)">
+            <img src="papi2.jpg" alt="Galeri 3" onclick="changeImage(this)">
+            <img src="papi3.jpg" alt="Galeri 4" onclick="changeImage(this)">
+            <img src="papi4.jpg" alt="Galeri 4" onclick="changeImage(this)">
+            <img src="papi5.jpg" alt="Galeri 4" onclick="changeImage(this)">
+            <img src="papi6.jpg" alt="Galeri 4" onclick="changeImage(this)">
+            <img src="foto_santai.jpeg" alt="Galeri 4" onclick="changeImage(this)">
+            <img src="thea_dayak.JPG" alt="Thea" onclick="changeImage(this)">
+            <img src="jesiel.jpg" alt="jesiel" onclick="changeImage(this)">
+            <img src="ghea.jpg" alt="Ghea" onclick="changeImage(this)">
+            <!-- Tambahkan lebih banyak jika perlu -->
+          </div>
+
+          <button class="scroll-btn right" onclick="scrollThumbnails(1)">→</button>
+        </div>
+        </div>
+      </section>
+      
+
+      <section id="contact" class="contact" data-aos="fade-up">
+        <div class="contact-container">
+          <h2>Contact Me</h2>
+          <p>If you’d like to chat or work together, feel free to send me a message!</p>
+      
+          <form class="contact-form">
+            <input type="text" name="name" placeholder="Yansen Maupula" required />
+            <input type="email" name="email" placeholder="yansenmaupula@gmail.com" required />
+            <textarea name="message" placeholder="Text me" rows="5" required></textarea>
+            <button type="submit">Send Message</button>
+          </form>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <p>© 2025 Yansen Maupula | Built with ❤️</p>
+      </footer>
+      
+      
+      
+  </header>
+  <!-- AOS JS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init();
+</script>
+
+<script>
+    function changeImage(thumbnail) {
+      const mainImage = document.getElementById("mainImage");
+      mainImage.src = thumbnail.src;
+    }
+  </script>
+
+<script>
+    function scrollThumbnails(direction) {
+      const scrollBox = document.getElementById("thumbnailScroll");
+      const scrollAmount = 200; // pixel per klik
+      scrollBox.scrollLeft += direction * scrollAmount;
+    }
+  
+    function changeImage(thumbnail) {
+      const mainImage = document.getElementById("mainImage");
+      mainImage.src = thumbnail.getAttribute("src");
+    }
+  </script>
+  
+</body>
+</html>
