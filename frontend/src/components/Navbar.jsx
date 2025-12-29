@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from './ui/button';
-import { ChevronDown, Anchor } from 'lucide-react';
+import { ChevronDown, Anchor, Briefcase } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +27,14 @@ const Navbar = () => {
           </Link>
 
           <div className="hidden md:flex items-center space-x-8">
+            <Link
+              to="/jobs"
+              className="flex items-center space-x-1 text-gray-700 hover:text-sky-900 transition-colors font-medium"
+            >
+              <Briefcase className="w-4 h-4" />
+              <span>Job Board</span>
+            </Link>
+            
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center space-x-1 text-gray-700 hover:text-sky-900 transition-colors font-medium">
                 <span>Tools</span>

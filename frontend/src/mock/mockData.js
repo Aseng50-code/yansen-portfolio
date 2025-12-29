@@ -62,6 +62,81 @@ export const reviews = [
   }
 ];
 
+export const jobOpenings = [
+  {
+    id: 1,
+    title: 'Chief Engineer',
+    company: 'Maersk Line',
+    vesselType: 'Container Vessel',
+    route: 'Europe - Asia',
+    salary: '$8,000 - $10,000/month',
+    contract: '6 months on/off',
+    requirements: 'Chief Engineer Certificate, Min 5 years experience on container vessels',
+    postedDate: '2 days ago',
+    featured: true
+  },
+  {
+    id: 2,
+    title: 'Second Officer',
+    company: 'MSC Mediterranean Shipping',
+    vesselType: 'Bulk Carrier',
+    route: 'Worldwide',
+    salary: '$5,500 - $6,500/month',
+    contract: '4 months on/2 months off',
+    requirements: 'OOW Certificate, ECDIS certified, 2+ years experience',
+    postedDate: '3 days ago',
+    featured: true
+  },
+  {
+    id: 3,
+    title: 'Chief Officer',
+    company: 'Carnival Cruise Line',
+    vesselType: 'Cruise Ship',
+    route: 'Caribbean',
+    salary: '$7,000 - $8,500/month',
+    contract: '6 months on/2 months off',
+    requirements: 'Chief Mate Certificate, Passenger ship experience preferred',
+    postedDate: '5 days ago',
+    featured: false
+  },
+  {
+    id: 4,
+    title: 'Third Engineer',
+    company: 'Teekay Tankers',
+    vesselType: 'Oil Tanker',
+    route: 'Middle East - Far East',
+    salary: '$4,500 - $5,500/month',
+    contract: '5 months on/off',
+    requirements: 'Third Engineer Certificate, Tanker endorsement required',
+    postedDate: '1 week ago',
+    featured: false
+  },
+  {
+    id: 5,
+    title: 'Able Seaman (AB)',
+    company: 'Pacific Shipping Ltd',
+    vesselType: 'General Cargo',
+    route: 'Trans-Pacific',
+    salary: '$2,200 - $2,800/month',
+    contract: '8 months on/4 months off',
+    requirements: 'AB Certificate, STCW Basic Safety, Min 1 year sea service',
+    postedDate: '1 week ago',
+    featured: false
+  },
+  {
+    id: 6,
+    title: 'Master Mariner',
+    company: 'NYK Line',
+    vesselType: 'LNG Carrier',
+    route: 'Australia - Japan',
+    salary: '$12,000 - $15,000/month',
+    contract: '3 months on/3 months off',
+    requirements: 'Master Certificate, LNG experience, Min 10 years sea service',
+    postedDate: '2 weeks ago',
+    featured: true
+  }
+];
+
 export const sampleCV = {
   personalInfo: {
     fullName: 'Captain James Anderson',
