@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from './ui/button';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Anchor } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,52 +13,55 @@ const Navbar = () => {
   const location = useLocation();
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-              <span className="text-white font-bold text-lg">CV</span>
+          <Link to="/" className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-sky-700 to-sky-900 rounded-lg flex items-center justify-center shadow-md">
+              <Anchor className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">WIZARD</span>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold text-sky-900 leading-tight">CV BUILD</span>
+              <span className="text-xs font-semibold text-sky-700 -mt-1">FOR SEAMAN</span>
+            </div>
           </Link>
 
           <div className="hidden md:flex items-center space-x-8">
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center space-x-1 text-gray-700 hover:text-gray-900 transition-colors">
+              <DropdownMenuTrigger className="flex items-center space-x-1 text-gray-700 hover:text-sky-900 transition-colors font-medium">
                 <span>Tools</span>
                 <ChevronDown className="w-4 h-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem asChild>
-                  <Link to="/templates">Resume Templates</Link>
+                  <Link to="/templates">Maritime CV Templates</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/builder">Resume Builder</Link>
+                  <Link to="/builder">CV Builder</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
             <Link
               to="/pricing"
-              className="text-gray-700 hover:text-gray-900 transition-colors"
+              className="text-gray-700 hover:text-sky-900 transition-colors font-medium"
             >
               Pricing
             </Link>
             <Link
               to="/faq"
-              className="text-gray-700 hover:text-gray-900 transition-colors"
+              className="text-gray-700 hover:text-sky-900 transition-colors font-medium"
             >
               FAQ
             </Link>
           </div>
 
           <div className="flex items-center space-x-4">
-            <Button variant="outline" className="hidden md:inline-flex">
+            <Button variant="outline" className="hidden md:inline-flex border-sky-700 text-sky-900 hover:bg-sky-50">
               Log in
             </Button>
-            <Button asChild className="bg-blue-600 hover:bg-blue-700">
-              <Link to="/builder">Create resume</Link>
+            <Button asChild className="bg-gradient-to-r from-sky-700 to-sky-900 hover:from-sky-800 hover:to-sky-950 shadow-md">
+              <Link to="/builder">Create Seaman CV</Link>
             </Button>
           </div>
         </div>
