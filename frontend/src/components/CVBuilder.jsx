@@ -5,7 +5,7 @@ import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Card } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Plus, Trash2, Download, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, Download, ArrowLeft, Ship, Anchor } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { sampleCV } from '../mock/mockData';
 import { toast } from '../hooks/use-toast';
@@ -15,7 +15,7 @@ const CVBuilder = () => {
     const saved = localStorage.getItem('cvData');
     return saved ? JSON.parse(saved) : sampleCV;
   });
-  const [selectedTemplate, setSelectedTemplate] = useState('modern');
+  const [selectedTemplate, setSelectedTemplate] = useState('nautical');
 
   useEffect(() => {
     localStorage.setItem('cvData', JSON.stringify(cvData));
@@ -98,35 +98,38 @@ const CVBuilder = () => {
 
   const handleDownload = () => {
     toast({
-      title: "Resume downloaded!",
-      description: "Your resume has been downloaded as PDF.",
+      title: "Download Available - $4.99",
+      description: "Your maritime CV is ready! Click to purchase and download as PDF.",
     });
   };
 
   const templateColors = {
-    modern: '#991B1B',
-    classic: '#1E40AF',
-    creative: '#065F46',
-    minimal: '#374151'
+    nautical: '#0C4A6E',
+    ocean: '#0369A1',
+    maritime: '#075985',
+    anchor: '#1E3A8A'
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gray-900 text-white py-4 px-4 sm:px-6 lg:px-8">
+      <div className="bg-gradient-to-r from-sky-900 to-sky-950 text-white py-4 px-4 sm:px-6 lg:px-8 shadow-lg">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Link to="/" className="text-gray-400 hover:text-white transition-colors">
+            <Link to="/" className="text-sky-200 hover:text-white transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Link>
-            <h1 className="text-xl font-semibold">Resume</h1>
+            <div className="flex items-center space-x-2">
+              <Ship className="w-5 h-5" />
+              <h1 className="text-xl font-semibold">Seaman CV Builder</h1>
+            </div>
           </div>
           <Button
             onClick={handleDownload}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-white text-sky-900 hover:bg-sky-50 shadow-md"
           >
             <Download className="w-4 h-4 mr-2" />
-            Download
+            Download PDF ($4.99)
           </Button>
         </div>
       </div>
@@ -155,12 +158,12 @@ const CVBuilder = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="title">Job Title</Label>
+                    <Label htmlFor="title">Rank/Position</Label>
                     <Input
                       id="title"
                       value={cvData.personalInfo.title}
                       onChange={(e) => updatePersonalInfo('title', e.target.value)}
-                      placeholder="Product Manager"
+                      placeholder="Chief Officer / Master Mariner"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -199,7 +202,7 @@ const CVBuilder = () => {
                       id="summary"
                       value={cvData.personalInfo.summary}
                       onChange={(e) => updatePersonalInfo('summary', e.target.value)}
-                      placeholder="Brief summary about yourself..."
+                      placeholder="Brief summary about your sea service, vessel experience, and career objectives..."
                       rows={5}
                     />
                   </div>
@@ -210,9 +213,12 @@ const CVBuilder = () => {
               <TabsContent value="experience">
                 <div className="space-y-4">
                   {cvData.experience.map((exp) => (
-                    <Card key={exp.id} className="p-6 space-y-4">
+                    <Card key={exp.id} className="p-6 space-y-4 border-sky-200">
                       <div className="flex justify-between items-start">
-                        <h3 className="font-semibold text-lg">Employment</h3>
+                        <h3 className="font-semibold text-lg text-sky-950 flex items-center">
+                          <Ship className="w-5 h-5 mr-2 text-sky-700" />
+                          Sea Service
+                        </h3>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -222,28 +228,28 @@ const CVBuilder = () => {
                         </Button>
                       </div>
                       <div>
-                        <Label>Position</Label>
+                        <Label>Rank/Position</Label>
                         <Input
                           value={exp.position}
                           onChange={(e) => updateExperience(exp.id, 'position', e.target.value)}
-                          placeholder="Product Manager"
+                          placeholder="Chief Officer / Second Engineer"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label>Employer</Label>
+                          <Label>Shipping Company</Label>
                           <Input
                             value={exp.employer}
                             onChange={(e) => updateExperience(exp.id, 'employer', e.target.value)}
-                            placeholder="Company Name"
+                            placeholder="Maersk Line / MSC"
                           />
                         </div>
                         <div>
-                          <Label>City</Label>
+                          <Label>Vessel Type / Route</Label>
                           <Input
                             value={exp.location}
                             onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
-                            placeholder="San Francisco, CA"
+                            placeholder="Container Vessel - Worldwide"
                           />
                         </div>
                       </div>
@@ -267,19 +273,19 @@ const CVBuilder = () => {
                         </div>
                       </div>
                       <div>
-                        <Label>Description</Label>
+                        <Label>Duties & Responsibilities</Label>
                         <Textarea
                           value={exp.description.join('\n')}
                           onChange={(e) => updateExperience(exp.id, 'description', e.target.value.split('\n'))}
-                          placeholder="• Achievement 1\n• Achievement 2"
+                          placeholder="• Navigation watch keeping\n• Cargo operations\n• Safety management"
                           rows={4}
                         />
                       </div>
                     </Card>
                   ))}
-                  <Button onClick={addExperience} variant="outline" className="w-full">
+                  <Button onClick={addExperience} variant="outline" className="w-full border-sky-700 text-sky-900 hover:bg-sky-50">
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Experience
+                    Add Sea Service
                   </Button>
                 </div>
               </TabsContent>
@@ -288,9 +294,12 @@ const CVBuilder = () => {
               <TabsContent value="education">
                 <div className="space-y-4">
                   {cvData.education.map((edu) => (
-                    <Card key={edu.id} className="p-6 space-y-4">
+                    <Card key={edu.id} className="p-6 space-y-4 border-sky-200">
                       <div className="flex justify-between items-start">
-                        <h3 className="font-semibold text-lg">Education</h3>
+                        <h3 className="font-semibold text-lg text-sky-950 flex items-center">
+                          <Anchor className="w-5 h-5 mr-2 text-sky-700" />
+                          Certificate/Education
+                        </h3>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -300,20 +309,20 @@ const CVBuilder = () => {
                         </Button>
                       </div>
                       <div>
-                        <Label>Degree</Label>
+                        <Label>Certificate/Degree</Label>
                         <Input
                           value={edu.degree}
                           onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
-                          placeholder="Bachelor of Science"
+                          placeholder="Master Mariner Certificate / BSc Maritime"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label>Institution</Label>
+                          <Label>Maritime Academy/Institution</Label>
                           <Input
                             value={edu.institution}
                             onChange={(e) => updateEducation(edu.id, 'institution', e.target.value)}
-                            placeholder="University Name"
+                            placeholder="Maritime Academy / Training Center"
                           />
                         </div>
                         <div>
@@ -334,19 +343,19 @@ const CVBuilder = () => {
                         />
                       </div>
                       <div>
-                        <Label>Description</Label>
+                        <Label>Additional Details</Label>
                         <Textarea
                           value={edu.description}
                           onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
-                          placeholder="Major, Minor, Honors, etc."
+                          placeholder="STCW certification, specializations, etc."
                           rows={2}
                         />
                       </div>
                     </Card>
                   ))}
-                  <Button onClick={addEducation} variant="outline" className="w-full">
+                  <Button onClick={addEducation} variant="outline" className="w-full border-sky-700 text-sky-900 hover:bg-sky-50">
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Education
+                    Add Certificate/Education
                   </Button>
                 </div>
               </TabsContent>
@@ -355,7 +364,7 @@ const CVBuilder = () => {
 
           {/* Preview Section */}
           <div className="lg:sticky lg:top-24 h-fit">
-            <Card className="p-8 bg-white shadow-xl">
+            <Card className="p-8 bg-white shadow-2xl border-2 border-sky-200">
               <div className="border border-gray-200 rounded-lg overflow-hidden">
                 {/* Header */}
                 <div
@@ -377,7 +386,8 @@ const CVBuilder = () => {
                   {/* Summary */}
                   {cvData.personalInfo.summary && (
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-2 border-b-2 border-gray-200 pb-1">
+                      <h3 className="text-lg font-bold text-sky-950 mb-2 border-b-2 border-sky-300 pb-1 flex items-center">
+                        <Ship className="w-5 h-5 mr-2" />
                         Profile
                       </h3>
                       <p className="text-sm text-gray-700 leading-relaxed">
@@ -389,8 +399,9 @@ const CVBuilder = () => {
                   {/* Experience */}
                   {cvData.experience.length > 0 && (
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-3 border-b-2 border-gray-200 pb-1">
-                        Experience
+                      <h3 className="text-lg font-bold text-sky-950 mb-3 border-b-2 border-sky-300 pb-1 flex items-center">
+                        <Anchor className="w-5 h-5 mr-2" />
+                        Sea Service
                       </h3>
                       <div className="space-y-4">
                         {cvData.experience.map((exp) => (
@@ -422,8 +433,8 @@ const CVBuilder = () => {
                   {/* Education */}
                   {cvData.education.length > 0 && (
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-3 border-b-2 border-gray-200 pb-1">
-                        Education
+                      <h3 className="text-lg font-bold text-sky-950 mb-3 border-b-2 border-sky-300 pb-1">
+                        Certificates & Education
                       </h3>
                       <div className="space-y-3">
                         {cvData.education.map((edu) => (
