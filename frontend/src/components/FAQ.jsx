@@ -7,68 +7,80 @@ import {
 } from './ui/accordion';
 import { Button } from './ui/button';
 import { Link } from 'react-router-dom';
+import { Anchor } from 'lucide-react';
 
 const FAQ = () => {
   const faqs = [
     {
-      question: 'How do I create a resume?',
-      answer: 'Creating a resume is easy! Simply click on "Create resume" button, fill in your personal information, work experience, education, and skills. Choose from our professional templates and download your resume in PDF format.'
+      question: 'How do I create a seaman CV?',
+      answer: 'Creating your maritime CV is simple! Click "Create Seaman CV" button, fill in your personal information, certificates, sea service experience, vessel types, and maritime skills. Choose from our professional seaman templates and preview your CV instantly. It\'s completely free to create and edit.'
     },
     {
-      question: 'Can I edit my resume after creating it?',
-      answer: 'Yes! Your resume is automatically saved in your browser. You can come back anytime to edit and update your information. With a premium account, your resumes are also saved in the cloud.'
+      question: 'Is it really free to use?',
+      answer: 'Yes! Creating, editing, and previewing your seaman CV is 100% free. You only pay $4.99 when you want to download your CV as a professional PDF file to send to shipping companies or manning agencies.'
     },
     {
-      question: 'How many resumes can I create?',
-      answer: 'You can create unlimited resumes with both free and premium plans. This allows you to tailor different resumes for different job applications.'
+      question: 'Can I edit my CV after downloading?',
+      answer: 'Absolutely! Your CV is saved in your browser, so you can come back anytime to edit and update your information. After making changes, you can download the updated version for another $4.99, or use the same download if purchased within 30 days.'
     },
     {
-      question: 'What formats can I download my resume in?',
-      answer: 'Premium users can download their resumes in PDF format, which is the most widely accepted format by employers. Free users can preview their resumes but need to upgrade to download.'
+      question: 'How many CVs can I create?',
+      answer: 'You can create unlimited seaman CVs completely free! This is perfect for tailoring different CVs for different vessel types, ranks, or shipping companies. You only pay when you download a specific CV as PDF.'
     },
     {
-      question: 'Are the templates ATS-friendly?',
-      answer: 'Yes! All our templates are designed to be ATS (Applicant Tracking System) friendly, ensuring your resume gets past automated screening systems used by many companies.'
+      question: 'What payment methods do you accept?',
+      answer: 'We accept all major credit cards (Visa, Mastercard, American Express), debit cards, and PayPal. Payment is secure and processed through industry-standard encrypted payment gateways.'
     },
     {
-      question: 'Can I cancel my subscription anytime?',
-      answer: 'Yes, you can cancel your premium subscription at any time. Your premium features will remain active until the end of your billing period.'
+      question: 'Are the templates suitable for maritime industry?',
+      answer: 'Yes! All our templates are specifically designed for seafarers and maritime professionals. They are optimized to highlight sea service, certificates, vessel types, and maritime skills in a format that shipping companies and manning agencies prefer.'
     },
     {
-      question: 'Do you offer a free trial?',
-      answer: 'Yes! We offer a 14-day free trial for our premium plan. You can try all premium features without any commitment. No credit card required for the trial.'
+      question: 'Can I use this for different ranks?',
+      answer: 'Absolutely! Our CV builder is suitable for all maritime ranks - from deck cadets, able seamen, officers, engineers, to master mariners and chief engineers. The templates are flexible to showcase experience at any rank level.'
     },
     {
       question: 'Is my data secure?',
-      answer: 'Absolutely! We take data security seriously. All your information is encrypted and stored securely. We never share your personal information with third parties.'
+      answer: 'Yes! We take data security very seriously. Your personal information is encrypted and stored securely. We never share your information with third parties. Your CV data is private and only accessible by you.'
     },
     {
-      question: 'Can I import my existing resume?',
-      answer: 'Premium users can upload their existing PDF or Word resumes, and our system will automatically extract and fill in the information. Please review the extracted data for accuracy.'
+      question: 'What format is the downloaded CV?',
+      answer: 'Your CV is downloaded as a high-quality PDF file. PDF format is universally accepted by shipping companies, manning agencies, and recruitment platforms. It ensures your CV looks professional on any device.'
     },
     {
-      question: 'Do you offer cover letter templates?',
-      answer: 'Yes! Premium users have access to matching cover letter templates that complement their resume design, creating a cohesive application package.'
+      question: 'Can I get a refund?',
+      answer: 'Yes! If you\'re not satisfied with your downloaded CV within 24 hours, contact our support team and we\'ll issue a full refund. We want you to be completely happy with your professional seaman CV.'
+    },
+    {
+      question: 'Do you offer bulk discounts for manning agencies?',
+      answer: 'Yes! If you\'re a manning agency or shipping company looking to help multiple seafarers create CVs, please contact us for special bulk pricing and white-label solutions.'
+    },
+    {
+      question: 'How long does it take to create a CV?',
+      answer: 'Most seafarers complete their CV in 10-15 minutes! Our maritime-focused interface makes it quick and easy to enter your sea service, certificates, and experience. You can save your progress and come back anytime.'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-sky-700 to-sky-900 rounded-full mb-4">
+            <Anchor className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-4xl font-bold text-sky-950 mb-4">
             Frequently Asked Questions
           </h1>
           <p className="text-xl text-gray-600">
-            Find answers to common questions about CV Wizard
+            Everything you need to know about CV Build for Seaman
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-8">
+        <div className="bg-white rounded-lg shadow-lg p-8">
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq, index) => (
               <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger className="text-left">
+                <AccordionTrigger className="text-left text-sky-950 hover:text-sky-700">
                   {faq.question}
                 </AccordionTrigger>
                 <AccordionContent className="text-gray-600">
@@ -80,15 +92,20 @@ const FAQ = () => {
         </div>
 
         <div className="mt-12 text-center">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+          <h3 className="text-xl font-semibold text-sky-950 mb-4">
             Still have questions?
           </h3>
           <p className="text-gray-600 mb-6">
             Can't find the answer you're looking for? Our support team is here to help.
           </p>
-          <Button asChild className="bg-blue-600 hover:bg-blue-700">
-            <Link to="/builder">Get Started Now</Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild className="bg-gradient-to-r from-sky-700 to-sky-900 hover:from-sky-800 hover:to-sky-950">
+              <Link to="/builder">Start Building Your CV</Link>
+            </Button>
+            <Button asChild variant="outline" className="border-sky-700 text-sky-900 hover:bg-sky-50">
+              <a href="mailto:support@cvbuildforseaman.com">Contact Support</a>
+            </Button>
+          </div>
         </div>
       </div>
     </div>
