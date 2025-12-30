@@ -14,7 +14,28 @@ BASE_URL = "https://maritime-cv-1.preview.emergentagent.com/api"
 ADMIN_EMAIL = "yansen@jesseenergisejahtera.com"
 ADMIN_PASSWORD = "123456"
 
-# Test data - Using the specific CV data from review request
+# Test data for announcements
+SAMPLE_ANNOUNCEMENT_DATA = {
+    "title": "Urgent: Chief Engineer Position Available",
+    "coverImage": "https://example.com/ship-image.jpg",
+    "body": "<h2>Position Details</h2><p>We are seeking an experienced <strong>Chief Engineer</strong> for our container vessel fleet.</p><ul><li>Minimum 5 years experience</li><li>Valid STCW certificates required</li><li>Competitive salary package</li></ul><p>Join our team and sail the world!</p>",
+    "positions": [
+        {
+            "title": "Chief Engineer",
+            "rank": "Chief Engineer",
+            "vesselType": "Container Vessel",
+            "contractDuration": "6 months",
+            "salary": "$8,000 - $10,000 USD"
+        }
+    ],
+    "contactInfo": "recruitment@maritime-company.com",
+    "tags": ["Chief Engineer", "Container Vessel", "Urgent", "STCW"],
+    "status": "published"
+}
+
+SAMPLE_COMMENT_DATA = {
+    "content": "This looks like a great opportunity! I have 8 years of experience as Chief Engineer on container vessels. How can I apply?"
+}
 SAMPLE_CV_DATA = {
     "personalInfo": {
         "fullName": "Captain James Anderson",
