@@ -266,6 +266,18 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "A4 Format CV Preview"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/A4CVPreview.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "A4 FORMAT PREVIEW TESTING COMPLETED: ✅ 'Live Preview (A4)' label clearly visible in right panel ✅ A4 format indicator 'A4 (210×297mm)' present in live preview ✅ 'Preview CV' button accessible in header ✅ Dialog opens with title 'CV Preview (A4 Format)' ✅ A4 format indicator visible in dialog preview ✅ Professional layout verified: blue gradient sidebar, circular photo placeholder, Personal Details with icons ✅ Skills section with 1-5 dot ratings working ✅ Languages section displaying correctly ✅ Right side sections (Profile, Education, Employment, Certificates) all present ✅ Visual consistency confirmed: clear SVG icons, consistent spacing, professional sky color scheme ✅ A4 dimensions properly implemented (210mm × 297mm) with exact pixel calculations ✅ All A4 format preview functionality working perfectly"
+
 agent_communication:
   - agent: "main"
     message: "Implemented Skills & Languages management tab in CVBuilderPro.jsx. Added 5th tab with skill category dropdowns (Deck/Engine/Common), 1-5 rating system for skills, and language management with proficiency levels. Please test the following flows: 1) Adding skills from dropdowns 2) Changing skill ratings 3) Deleting skills 4) Adding/editing/deleting languages 5) CV Preview shows skills and languages correctly"
@@ -279,3 +291,5 @@ agent_communication:
     message: "COMPREHENSIVE SOCIAL MEDIA & PAYMENT TESTING COMPLETED: ✅ All 5 social media fields (LinkedIn, Facebook, Instagram, X/Twitter, YouTube) working perfectly in Personal tab ✅ CV Preview displays social media links with proper icons in blue sidebar ✅ Login integration working with provided credentials ✅ Payment confirmation page shows 'Payment Confirmed!' message and 'Download CV PDF' button for user yansen@jesseenergisejahtera.com ✅ All requested features tested and working 100% successfully. No issues found."
   - agent: "testing"
     message: "CV DOWNLOAD API QUALITY VERIFICATION COMPLETED: ✅ Tested CV Download API with specific Captain James Anderson CV data as requested ✅ Admin login successful with provided credentials (yansen@jesseenergisejahtera.com / 123456) ✅ Payment status verified - canDownload: true ✅ PDF generated successfully (20,918 bytes) with valid format (starts with %PDF-1.7) ✅ Correct Content-Type: application/pdf and filename: Captain_James_Anderson_Seaman_CV.pdf ✅ PDF quality matches web preview expectations - all CV data properly rendered ✅ All 5 backend API tests passed with 100% success rate. CV Download API working perfectly."
+  - agent: "testing"
+    message: "A4 FORMAT PREVIEW TESTING COMPLETED: ✅ Successfully tested all A4 format preview functionality at /builder ✅ 'Live Preview (A4)' label clearly visible and properly labeled ✅ A4 format indicator 'A4 (210×297mm)' present in both live preview and dialog ✅ 'Preview CV' button opens dialog with correct title 'CV Preview (A4 Format)' ✅ Professional layout verified: blue gradient sidebar, circular photo placeholder, Personal Details with icons, Skills with dot ratings, Languages section ✅ Right side content properly organized: Profile, Education, Employment, Certificates sections ✅ Visual consistency excellent: clear SVG icons, consistent spacing, professional sky color scheme ✅ A4 dimensions correctly implemented with exact pixel calculations (794px × 1123px) ✅ All requested A4 format features working perfectly - no issues found"
