@@ -10,6 +10,7 @@ import { Plus, Trash2, Download, ArrowLeft, Ship, Anchor, Upload, X, Eye, Mail, 
 import { Link } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { sampleCV, maritimeSkillsOptions, languageLevels } from '../mock/mockData';
+import A4CVPreview from './A4CVPreview';
 
 const CVBuilderPro = () => {
   const [cvData, setCvData] = useState(() => {
