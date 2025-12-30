@@ -149,7 +149,7 @@ const JobBoard = () => {
             Create your professional Seaman CV in minutes and start applying to these opportunities!
           </p>
           <Button asChild size="lg" className="bg-white text-sky-900 hover:bg-sky-50">
-            <a href="/builder">Create Your CV Now - Only $1 to Download</a>
+            <a href="/builder">Create Your CV Now - Only Rp 15,000 to Download</a>
           </Button>
         </div>
       </div>
