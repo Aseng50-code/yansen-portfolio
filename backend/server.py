@@ -527,7 +527,7 @@ async def confirm_payment(
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Payment not found")
     
-    payment = await db.payments.find_one({"id": payment_id})
+    payment = await db.payments.find_one({"id": payment_id}, {"_id": 0})
     return {"message": "Payment confirmed successfully", "payment": payment}
 
 @api_router.put("/payments/{payment_id}/reject")
@@ -552,7 +552,7 @@ async def reject_payment(
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Payment not found")
     
-    payment = await db.payments.find_one({"id": payment_id})
+    payment = await db.payments.find_one({"id": payment_id}, {"_id": 0})
     return {"message": "Payment rejected", "payment": payment}
 
 
