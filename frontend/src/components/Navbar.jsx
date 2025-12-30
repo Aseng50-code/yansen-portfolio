@@ -66,7 +66,7 @@ const Navbar = () => {
 
           <div className="flex items-center space-x-4">
             <Button variant="outline" className="hidden md:inline-flex border-sky-700 text-sky-900 hover:bg-sky-50">
-              Log in
+              <Link to="/login">Log in</Link>
             </Button>
             <Button asChild className="bg-gradient-to-r from-sky-700 to-sky-900 hover:from-sky-800 hover:to-sky-950 shadow-md">
               <Link to="/builder">Create Seaman CV</Link>

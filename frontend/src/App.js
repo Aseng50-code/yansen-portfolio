@@ -8,6 +8,9 @@ import CVBuilder from "./components/CVBuilder";
 import Templates from "./components/Templates";
 import Pricing from "./components/Pricing";
 import FAQ from "./components/FAQ";
+import Login from "./components/Login";
+import Payment from "./components/Payment";
+import JobBoardWithSocial from "./components/JobBoardWithSocial";
 
 function App() {
   return (
@@ -20,6 +23,9 @@ function App() {
           <Route path="/templates" element={<Templates />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/faq" element={<FAQ />} />
+          <Route path="/jobs" element={<JobBoardWithSocial />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/payment" element={<Payment />} />
         </Routes>
         <Toaster />
       </BrowserRouter>
