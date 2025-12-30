@@ -675,6 +675,59 @@ const CVBuilderPro = () => {
                       placeholder="January 15, 1985"
                     />
                   </div>
+
+                  {/* Social Media Section */}
+                  <div className="border-t border-sky-200 pt-4 mt-4">
+                    <Label className="text-sky-950 font-semibold mb-3 block">Social Media (Optional)</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="linkedin" className="text-sm text-gray-600">LinkedIn</Label>
+                        <Input
+                          id="linkedin"
+                          value={cvData.personalInfo.linkedin || ''}
+                          onChange={(e) => updatePersonalInfo('linkedin', e.target.value)}
+                          placeholder="linkedin.com/in/username"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="facebook" className="text-sm text-gray-600">Facebook</Label>
+                        <Input
+                          id="facebook"
+                          value={cvData.personalInfo.facebook || ''}
+                          onChange={(e) => updatePersonalInfo('facebook', e.target.value)}
+                          placeholder="facebook.com/username"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="instagram" className="text-sm text-gray-600">Instagram</Label>
+                        <Input
+                          id="instagram"
+                          value={cvData.personalInfo.instagram || ''}
+                          onChange={(e) => updatePersonalInfo('instagram', e.target.value)}
+                          placeholder="@username"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="twitter" className="text-sm text-gray-600">X (Twitter)</Label>
+                        <Input
+                          id="twitter"
+                          value={cvData.personalInfo.twitter || ''}
+                          onChange={(e) => updatePersonalInfo('twitter', e.target.value)}
+                          placeholder="@username"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Label htmlFor="youtube" className="text-sm text-gray-600">YouTube</Label>
+                        <Input
+                          id="youtube"
+                          value={cvData.personalInfo.youtube || ''}
+                          onChange={(e) => updatePersonalInfo('youtube', e.target.value)}
+                          placeholder="youtube.com/@channel"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div>
                     <Label htmlFor="summary">Professional Summary</Label>
                     <Textarea
