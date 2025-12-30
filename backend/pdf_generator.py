@@ -1,6 +1,7 @@
 """
 CV PDF Generator for CV Build for SEAMAN
 Uses HTML/CSS to PDF conversion for pixel-perfect match with web preview
+Supports automatic pagination for multi-page CVs
 """
 
 from weasyprint import HTML
@@ -9,7 +10,7 @@ from io import BytesIO
 
 
 def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
-    """Generate HTML that matches the CV preview exactly"""
+    """Generate HTML that matches the CV preview exactly with pagination support"""
     
     personal = cv_data.get('personalInfo', {})
     experience = cv_data.get('experience', [])
@@ -156,7 +157,7 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
     
     # Build skills HTML
     skills_html = ""
-    for skill in skills[:8]:
+    for skill in skills[:10]:
         dots = ""
         level = skill.get('level', 3)
         for i in range(5):
@@ -172,7 +173,7 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
     
     # Build languages HTML
     languages_html = ""
-    for lang in languages[:5]:
+    for lang in languages[:6]:
         languages_html += '''
         <div class="language-item">
             <span class="lang-name">''' + lang.get('name', '') + '''</span>
@@ -181,7 +182,7 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
     
     # Build education HTML
     education_html = ""
-    for edu in education[:3]:
+    for edu in education:
         desc_html = '<div class="item-description">• ' + edu.get("description", "") + '</div>' if edu.get('description') else ''
         education_html += '''
         <div class="content-item">
@@ -195,12 +196,12 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
     
     # Build experience HTML
     experience_html = ""
-    for exp in experience[:3]:
+    for exp in experience:
         end_date = 'Present' if exp.get('current') else exp.get('endDate', '')
         descriptions = exp.get('description', [])
         desc_html = ""
         if isinstance(descriptions, list):
-            for desc in descriptions[:4]:
+            for desc in descriptions[:6]:
                 if desc:
                     desc_html += '<div class="item-description">• ' + desc + '</div>'
         experience_html += '''
@@ -215,7 +216,7 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
     
     # Build certificates HTML
     certificates_html = ""
-    for cert in certificates[:5]:
+    for cert in certificates:
         validity = " | Valid: " + cert.get('validity') if cert.get('validity') else ""
         certificates_html += '''
         <div class="content-item cert-item">
@@ -243,7 +244,7 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
     languages_section = ""
     if languages:
         languages_section = '''
-            <div class="section-header section-header-dark" style="margin-top: 16pt;">Languages</div>
+            <div class="section-header section-header-dark" style="margin-top: 14pt;">Languages</div>
             ''' + languages_html
     
     # Profile section
@@ -282,7 +283,7 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
                 ''' + certificates_html + '''
             </div>'''
     
-    # Complete HTML
+    # Complete HTML with pagination support
     html = '''<!DOCTYPE html>
 <html>
 <head>
@@ -299,6 +300,11 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
             box-sizing: border-box;
         }
         
+        html, body {
+            width: 210mm;
+            min-height: 297mm;
+        }
+        
         body {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 9pt;
@@ -311,59 +317,62 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
             width: 210mm;
             min-height: 297mm;
             display: flex;
+            page-break-inside: avoid;
         }
         
-        /* Left Sidebar */
+        /* Left Sidebar - Fixed on first page */
         .sidebar {
             width: 35%;
-            background: linear-gradient(180deg, #0c4a6e 0%, #075985 100%);
-            color: white;
+            min-height: 297mm;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
         
         .sidebar-blue {
-            padding: 24pt 20pt;
+            background: linear-gradient(180deg, #0c4a6e 0%, #075985 100%);
+            color: white;
+            padding: 20pt 16pt;
             flex-shrink: 0;
         }
         
         .sidebar-white {
             background: white;
-            padding: 20pt;
+            padding: 16pt;
             flex-grow: 1;
         }
         
         /* Header Section */
         .name {
-            font-size: 18pt;
+            font-size: 16pt;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 6pt;
+            margin-bottom: 4pt;
             line-height: 1.2;
         }
         
         .name-underline {
-            width: 60pt;
+            width: 50pt;
             height: 2pt;
             background: white;
-            margin: 0 auto 8pt auto;
+            margin: 0 auto 6pt auto;
         }
         
         .title {
-            font-size: 11pt;
+            font-size: 10pt;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 16pt;
+            margin-bottom: 12pt;
             line-height: 1.3;
         }
         
         /* Photo */
         .photo-container {
-            width: 110pt;
-            height: 110pt;
+            width: 100pt;
+            height: 100pt;
             border-radius: 50%;
-            border: 5pt solid white;
-            margin: 0 auto 16pt auto;
+            border: 4pt solid white;
+            margin: 0 auto 12pt auto;
             overflow: hidden;
             background: #0a3d5c;
             display: flex;
@@ -379,38 +388,38 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
         }
         
         .photo-placeholder {
-            font-size: 9pt;
+            font-size: 8pt;
             color: white;
             text-align: center;
         }
         
         /* Section Headers */
         .section-header {
-            font-size: 11pt;
+            font-size: 10pt;
             font-weight: bold;
             text-transform: uppercase;
             margin-bottom: 6pt;
-            padding-bottom: 4pt;
+            padding-bottom: 3pt;
             border-bottom: 1.5pt solid white;
         }
         
         .section-header-dark {
             color: #0c4a6e;
             border-bottom-color: #0c4a6e;
-            margin-bottom: 10pt;
+            margin-bottom: 8pt;
         }
         
         /* Personal Details */
         .detail-item {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 6pt;
-            gap: 8pt;
+            margin-bottom: 5pt;
+            gap: 6pt;
         }
         
         .icon-wrapper {
-            width: 14pt;
-            height: 14pt;
+            width: 12pt;
+            height: 12pt;
             flex-shrink: 0;
             display: flex;
             align-items: center;
@@ -418,41 +427,41 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
         }
         
         .icon {
-            width: 12pt;
-            height: 12pt;
+            width: 10pt;
+            height: 10pt;
         }
         
         .detail-item span {
             flex: 1;
             word-break: break-word;
-            font-size: 9pt;
-            line-height: 1.4;
+            font-size: 8pt;
+            line-height: 1.3;
         }
         
         .social-text {
-            font-size: 8pt !important;
+            font-size: 7pt !important;
         }
         
         /* Skills */
         .skill-item {
-            margin-bottom: 8pt;
+            margin-bottom: 6pt;
         }
         
         .skill-name {
-            font-size: 9pt;
+            font-size: 8pt;
             font-weight: 500;
             color: #1f2937;
-            margin-bottom: 3pt;
+            margin-bottom: 2pt;
         }
         
         .skill-dots {
             display: flex;
-            gap: 3pt;
+            gap: 2pt;
         }
         
         .skill-dot {
-            width: 10pt;
-            height: 10pt;
+            width: 8pt;
+            height: 8pt;
             border-radius: 50%;
         }
         
@@ -468,7 +477,8 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
         .language-item {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 4pt;
+            margin-bottom: 3pt;
+            font-size: 8pt;
         }
         
         .lang-name {
@@ -483,23 +493,24 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
         /* Right Content */
         .main-content {
             width: 65%;
-            padding: 24pt;
+            padding: 20pt;
             background: white;
             border-left: 2pt solid #e5e7eb;
         }
         
         .content-section {
-            margin-bottom: 16pt;
+            margin-bottom: 14pt;
+            page-break-inside: avoid;
         }
         
         .content-header {
-            font-size: 13pt;
+            font-size: 12pt;
             font-weight: bold;
             color: #0c4a6e;
             text-transform: uppercase;
-            margin-bottom: 4pt;
-            padding-bottom: 4pt;
-            border-bottom: 3pt solid #0c4a6e;
+            margin-bottom: 3pt;
+            padding-bottom: 3pt;
+            border-bottom: 2.5pt solid #0c4a6e;
         }
         
         .profile-text {
@@ -507,12 +518,13 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
             line-height: 1.5;
             text-align: justify;
             color: #1f2937;
-            margin-top: 8pt;
+            margin-top: 6pt;
         }
         
         /* Content Items */
         .content-item {
-            margin-top: 10pt;
+            margin-top: 8pt;
+            page-break-inside: avoid;
         }
         
         .item-header {
@@ -528,28 +540,28 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
         }
         
         .item-date {
-            font-size: 9pt;
+            font-size: 8pt;
             color: #6b7280;
             flex-shrink: 0;
-            margin-left: 8pt;
+            margin-left: 6pt;
         }
         
         .item-subtitle {
             font-size: 9pt;
             font-style: italic;
             color: #075985;
-            margin-top: 2pt;
+            margin-top: 1pt;
         }
         
         .item-description {
             font-size: 8pt;
             color: #1f2937;
-            margin-top: 2pt;
-            padding-left: 8pt;
+            margin-top: 1pt;
+            padding-left: 6pt;
         }
         
         .cert-item {
-            margin-top: 6pt;
+            margin-top: 5pt;
         }
         
         .cert-title {
@@ -557,15 +569,24 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
         }
         
         .cert-issuer {
-            font-size: 8pt;
+            font-size: 7pt;
             color: #6b7280;
             margin-top: 1pt;
         }
         
+        /* Print and pagination */
         @media print {
             body {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+            
+            .content-section {
+                page-break-inside: avoid;
+            }
+            
+            .content-item {
+                page-break-inside: avoid;
             }
         }
     </style>
@@ -607,7 +628,7 @@ def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
 
 
 def generate_cv_pdf(cv_data: dict, profile_photo: str = None) -> BytesIO:
-    """Generate a professional CV PDF using HTML/CSS conversion"""
+    """Generate a professional CV PDF using HTML/CSS conversion with pagination support"""
     
     # Get profile photo from cv_data if not provided separately
     if not profile_photo:
