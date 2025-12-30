@@ -97,10 +97,8 @@ const CVBuilder = () => {
   };
 
   const handleDownload = () => {
-    toast({
-      title: "Download Available - $4.99",
-      description: "Your maritime CV is ready! Click to purchase and download as PDF.",
-    });
+    // Redirect to payment page
+    window.location.href = '/payment';
   };
 
   const templateColors = {
@@ -129,7 +127,7 @@ const CVBuilder = () => {
             className="bg-white text-sky-900 hover:bg-sky-50 shadow-md"
           >
             <Download className="w-4 h-4 mr-2" />
-            Download PDF ($4.99)
+            Download PDF (Rp 15,000)
           </Button>
         </div>
       </div>

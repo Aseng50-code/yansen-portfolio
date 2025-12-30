@@ -17,11 +17,11 @@ const FAQ = () => {
     },
     {
       question: 'Is it really free to use?',
-      answer: 'Yes! Creating, editing, and previewing your seaman CV is 100% free. You only pay $4.99 when you want to download your CV as a professional PDF file to send to shipping companies or manning agencies.'
+      answer: 'Yes! Creating, editing, and previewing your seaman CV is 100% free. You only pay Rp 15,000 when you want to download your CV as a professional PDF file to send to shipping companies or manning agencies.'
     },
     {
       question: 'Can I edit my CV after downloading?',
-      answer: 'Absolutely! Your CV is saved in your browser, so you can come back anytime to edit and update your information. After making changes, you can download the updated version for another $4.99, or use the same download if purchased within 30 days.'
+      answer: 'Absolutely! Your CV is saved in your browser, so you can come back anytime to edit and update your information. After making changes, you can download the updated version for another Rp 15,000, or use the same download if purchased within 30 days.'
     },
     {
       question: 'How many CVs can I create?',

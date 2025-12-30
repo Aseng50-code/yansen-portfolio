@@ -100,7 +100,7 @@ const LandingPage = () => {
                   <div className="w-6 h-6 rounded-full bg-sky-100 flex items-center justify-center flex-shrink-0 mt-1">
                     <Award className="w-4 h-4 text-sky-700" />
                   </div>
-                  <p className="text-gray-700">Free to create - Pay only $4.99 to download PDF</p>
+                  <p className="text-gray-700">Free to create - Pay only Rp 15,000 to download PDF</p>
                 </div>
               </div>
               <Button
