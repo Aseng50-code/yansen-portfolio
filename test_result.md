@@ -291,6 +291,8 @@ test_plan:
 
 agent_communication:
   - agent: "main"
+    message: "Implemented Maritime Job Openings feature. Changes include: 1) Updated App.js to route /jobs to MaritimeJobOpenings component 2) Added rich text editor (ReactQuill) for admin announcement creation/editing 3) Share functionality limited to LinkedIn and Facebook only 4) Fixed bcrypt dependency issue (downgraded to 4.0.1) 5) Added sanitize_html function for safe HTML content. Test the following: 1) View announcements feed at /jobs 2) Admin can create/edit/delete announcements with rich text 3) Like/Comment functionality for logged-in users 4) Share buttons (Copy Link, Facebook, LinkedIn) 5) Individual announcement URLs (/jobs/:id)"
+  - agent: "main"
     message: "Implemented Skills & Languages management tab in CVBuilderPro.jsx. Added 5th tab with skill category dropdowns (Deck/Engine/Common), 1-5 rating system for skills, and language management with proficiency levels. Please test the following flows: 1) Adding skills from dropdowns 2) Changing skill ratings 3) Deleting skills 4) Adding/editing/deleting languages 5) CV Preview shows skills and languages correctly"
   - agent: "testing"
     message: "TESTING COMPLETED SUCCESSFULLY: All Skills & Languages management functionality is working perfectly. Tested all requested flows: ✅ Skills tab navigation ✅ Adding skills from all three dropdowns (Deck Officer, Engine Officer, Common Skills) ✅ 1-5 rating system with visual feedback ✅ Skill deletion ✅ Language management (add/edit/delete) with proficiency levels ✅ CV Preview correctly displays skills with dot ratings and languages with proficiency levels. No issues found - all functionality working as expected."
