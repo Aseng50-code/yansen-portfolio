@@ -1,0 +1,220 @@
+<analysis>**original_problem_statement:** The user's initial goal was to clone  but has since pivoted to creating a specialized CV Build for SEAMAN application. The core features include a maritime-themed CV builder, a payment-gated PDF download, user management, and an admin panel.
+
+The latest and most significant feature request is to completely overhaul the Maritime Job Openings page.
+
+**PRODUCT REQUIREMENTS:**
+1.  **Rebrand:** CV Build for SEAMAN with a maritime theme.
+2.  **Business Model:** Free CV building, with a **Rp. 15,000** fee to download the final PDF.
+3.  **CV Builder:**
+    *   A specific two-column layout: a blue sidebar for personal info (with a circular photo) and a main content area.
+    *   Photo upload feature.
+    *   Skills & Languages section with a 1-5 rating system and predefined maritime skills.
+    *   A Preview button showing an A4-sized, paginated preview of the final CV.
+    *   Social media links (LinkedIn, Facebook, etc.) in the personal details section.
+4.  **PDF Generation:**
+    *   The downloaded PDF must be a pixel-perfect, A4-sized replica of the web preview.
+    *   It must support multi-page generation for longer CVs.
+    *   It must render icons as sharp vector graphics.
+5.  **Payment Flow:**
+    *   A payment page displaying bank details (BNI, CV Jesse Energi Sejahtera, 3334433003).
+    *   Users upload proof of payment.
+    *   Admins can verify payments to unlock the PDF download for the user.
+6.  **User Management & Security:**
+    *   Standard user registration and JWT-based login.
+    *   Admin role with credentials:  / .
+    *   Change password functionality.
+    *   **(NEW)** Optional public user profiles with privacy controls, showing only non-sensitive data.
+7.  **Job Announcement Feed (New Major Feature):**
+    *   Convert the existing Job Board into a read-only Job Announcement Feed.
+    *   Remove all Apply or Save Job functionality.
+    *   Admins can create, edit, and delete long-form announcement posts (with optional images, rich text, lists, and contact info).
+    *   Implement social engagement features for logged-in users: **Like, Comment, Share**.
+    *   Each post must have a unique, shareable URL.
+
+**User's preferred language**: English
+
+**what currently exists?**
+A full-stack application with a React frontend and a FastAPI backend using MongoDB.
+-   **Frontend:** A multi-page app with pages for Landing, Login, CV Builder, a new (empty) Maritime Job Openings page, and Payment. It uses React Context for auth. The CV builder is highly functional, featuring a live A4-sized preview with pagination.
+-   **Backend:** A FastAPI server with endpoints for users, admin functions, a complete payment verification flow, and PDF generation using  for high-fidelity HTML-to-PDF conversion. New models and API stubs for announcements, likes, and comments have just been created.
+
+**Last working item**:
+-   Last item agent was working: The agent just started the major task of refactoring the Job Board into a Maritime Job Openings announcement feed with social features. The initial backend setup and frontend component creation are complete.
+-   Status: **IN PROGRESS**
+-   Agent Testing Done: N
+-   Which testing method agent to use? both (This is a large feature requiring both frontend and backend validation).
+-   User Testing Done: N
+
+**All Pending/In progress Issue list**:
+-   **Issue 1:  AttributeError (P2)**
+    -   An  was noted in the previous fork. The current agent verified that authentication works but did not fix the underlying warning. It's a low-priority issue but could indicate a dependency conflict.
+    -   **Status:** NOT STARTED
+
+**Issues Detail**:
+-   **Issue 1:  AttributeError**
+    -   **Attempted fixes:** None. The agent confirmed login functionality was unaffected and dismissed it as a deprecation warning.
+    -   **Next debug checklist:**
+        1.  Verify  and  versions.
+        2.  Consider reinstalling with Looking in indexes: https://pypi.org/simple, https://d33sy5i8bnduwe.cloudfront.net/simple/
+Collecting passlib[bcrypt]
+  Downloading passlib-1.7.4-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting bcrypt>=3.1.0 (from passlib[bcrypt])
+  Downloading bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl.metadata (10 kB)
+Downloading passlib-1.7.4-py2.py3-none-any.whl (525 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 525.6/525.6 kB 5.6 MB/s  0:00:00
+Downloading bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl (278 kB)
+Installing collected packages: passlib, bcrypt
+  Attempting uninstall: passlib
+    Found existing installation: passlib 1.7.4
+    Uninstalling passlib-1.7.4:
+      Successfully uninstalled passlib-1.7.4
+  Attempting uninstall: bcrypt
+    Found existing installation: bcrypt 4.1.3
+    Uninstalling bcrypt-4.1.3:
+      Successfully uninstalled bcrypt-4.1.3
+
+Successfully installed bcrypt-5.0.0 passlib-1.7.4.
+        3.  Re-run the  script to see if the warning persists.
+    -   **Why fix this issue and what will be achieved with the fix?** Ensures the core authentication mechanism is free of any warnings or potential instabilities.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** backend
+    -   **Blocked on other issue:** None
+
+**In progress Task List**:
+-   **Task 1: Implement Maritime Job Openings Feature (P0)**
+    -   **Where to resume:** The primary work is in . The UI needs to be built for the public announcement feed, admin creation/editing tools, and the like/comment/share components. These need to be connected to the newly created backend endpoints in .
+    -   **What will be achieved with this?** A complete, modern, read-only job announcement feed with social engagement, replacing the old job board.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on something:** None
+
+**Upcoming and Future Tasks**
+-   **Upcoming Tasks:**
+    -   **Task 1: Implement Google OAuth Integration (P1):**
+        -   Integrate a Google OAuth library in .
+        -   Create a new backend endpoint () to handle token verification and user creation/login.
+-   **Future Tasks:**
+    -   **Task 2: Full CV Data Persistence (P1):**
+        -   Currently, the CV data is held in the frontend state. Implement backend endpoints to save, load, and update a user's CV data in the database, connecting it to the  component.
+
+**Completed work in this session**
+-   **Skills & Languages Tab:** Successfully added a new tab to the CV builder for managing skills and languages with a 1-5 rating system and predefined maritime skill options.
+-   **Payment & PDF Download Flow:**
+    -   Implemented the full payment lifecycle: bank details display, payment proof upload, admin confirmation, and status checking.
+    -   Created backend endpoints to manage the entire flow.
+    -   Updated the  page to reflect payment status and show a download button upon confirmation.
+-   **High-Fidelity PDF Generation:**
+    -   Refactored the PDF generator multiple times to perfectly match the web preview.
+    -   Switched to  to render HTML/CSS directly to PDF, ensuring vector icons, correct fonts, and identical layouts.
+-   **A4 Sizing & Pagination:**
+    -   Re-engineered the CV preview () to be a fixed A4 aspect ratio.
+    -   Implemented automatic pagination in both the web preview and the final PDF, so content flows to multiple pages correctly.
+-   **Social Media Fields:** Added optional social media fields (LinkedIn, Facebook, etc.) to the CV builder form and the final CV output.
+
+**Earlier issues found/mentioned but not fixed**
+-   **Issue 1:  AttributeError**
+    -   **Debug checklist:** See All Pending/In progress Issue list.
+    -   **Why to solve this issue and what will be achieved with this?** To ensure a clean and stable authentication dependency stack.
+    -   **Should Test frontend/backend/both after fix:** backend
+    -   **Is recurring issue?** Y
+
+**Known issue recurrence from previous fork**
+-   None
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Frontend:** React, React Router, TailwindCSS, React Context.
+-   **Backend:** FastAPI, Pydantic, MongoDB ().
+-   **PDF Generation:**  for high-fidelity HTML/CSS to PDF conversion.
+-   **Architecture:** Decoupled Full-Stack (SPA + REST API).
+
+**key DB schema**
+-   **users:** 
+-   **jobs:** (Now legacy, to be replaced by announcements)
+-   **payment_info:** 
+-   **payments:** 
+-   **announcement_posts:** 
+-   **likes:**  (unique constraint on userId-postId)
+-   **comments:** 
+-   **public_profile_settings:** 
+
+**changes in tech stack**
+-   Added 
+-----
+
+WeasyPrint could not import some external libraries. Please carefully follow the installation steps before reporting an issue:
+https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation
+https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#troubleshooting 
+
+----- and its system dependencies (, , ) to the backend for PDF generation.
+-   Added  for PDF analysis during development.
+
+**All files of reference**
+-   : The new component for the job announcement feed. **(Priority)**
+-   : Contains all new API logic for announcements, likes, comments, and profile settings. **(Priority)**
+-   : Defines the new database schemas. **(Priority)**
+-   : Routing was updated to point  to the new component.
+-   : The final, high-fidelity PDF generator using WeasyPrint.
+-   : The reusable A4 paginated preview component.
+-   : The main CV builder component, which was refactored to use .
+
+**Areas that need refactoring**:
+-    is still extremely large (over 1200 lines). Although the preview logic was extracted, the form logic itself could be broken down into smaller sub-components for maintainability (e.g., , , ).
+
+**key api endpoints**
+-   : Create a new announcement (Admin).
+-   : Get all announcements.
+-   : Like/unlike a post (User).
+-   : Add a comment (User).
+-   : Get comments for a post.
+-   : Delete a comment (Owner or Admin).
+-   : Update user's public profile setting.
+-   : Get a user's public profile (if visible).
+-   : Submit payment proof.
+-   : Check own payment status.
+-   : Download the CV PDF after payment confirmation.
+
+**Critical Info for New Agent**
+-   The user has a very high standard for visual fidelity. The switch to  for PDF generation was a critical success. Any future UI work must maintain this level of quality between preview and output.
+-   The current task is large and multi-faceted. It involves frontend UI, backend API development, and database schema changes. It should be broken down into smaller, testable steps: (1) build the read-only public feed, (2) build the admin creation tools, (3) implement likes, (4) implement comments, (5) implement share, (6) implement public profiles.
+-   The backend stubs for the new feature are in place but likely need refinement as the frontend is built out. Expect to iterate on the API signatures in .
+
+**documents and test reports created in this job**
+-    (updated multiple times).
+
+**Last 10 User Messages and any pending HUMAN messages**
+10. **User:** Request to fix PDF quality to match the preview (icons, photo frame, spacing).
+9.  **Agent:** Acknowledges and implements the first round of PDF generator fixes.
+8.  **User:** Reports that the PDF icons and background are still not good enough and requests the addition of social media fields.
+7.  **Agent:** Acknowledges, adds social media fields, and rewrites the PDF generator again.
+6.  **User:** Requests that the downloaded PDF *exactly* match the preview, suggesting vector icons and embedded fonts.
+5.  **Agent:** Understands and switches to an HTML-to-PDF approach using .
+4.  **User:** Requests the document size be set to A4 and for the preview and PDF to support automatic pagination for long CVs.
+3.  **Agent:** Acknowledges and implements the A4 preview and paginated PDF generation.
+2.  **User:** Provides a very large and detailed feature request to completely transform the Job Board into a read-only Announcement Feed with admin tools and social features (like, comment, share) and public user profiles.
+1.  **Agent:** Acknowledges the large request and begins implementation by setting up the necessary backend models and API endpoints, and creating the new frontend component file. (Current state)
+
+**Project Health Check:**
+-   **Broken:** None.
+-   **Mocked:** The new  component is an empty shell. The functionality it's supposed to provide is not yet implemented.
+
+**3rd Party Integrations**
+-   **WeasyPrint:** Used for HTML-to-PDF conversion in the backend.
+-   **Google OAuth:** Requested but not yet implemented.
+
+**Testing status**
+-   **Testing agent used after significant changes:** YES (for Skills tab and Payment Flow).
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:** []
+-   **Known regressions:** None.
+
+**Credentials to test flow:**
+-   **Admin Email:** 
+-   **Admin Password:** 
+
+**What agent forgot to execute**
+-   The agent has not yet started the Google OAuth integration, which was part of the original product requirements.
+-   The agent correctly deferred the  warning as a low-priority issue to focus on the user's explicit feature requests.</analysis>

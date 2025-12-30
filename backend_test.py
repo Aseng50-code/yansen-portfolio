@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://maritime-cv.preview.emergentagent.com/api"
+BASE_URL = "https://maritime-cv-1.preview.emergentagent.com/api"
 ADMIN_EMAIL = "yansen@jesseenergisejahtera.com"
 ADMIN_PASSWORD = "123456"
 
