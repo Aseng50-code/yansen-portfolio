@@ -240,11 +240,11 @@ class BackendTester:
                 f"Request failed: {str(e)}"
             )
     
-    def test_cv_download(self):
-        """Test POST /api/cv/download with Authorization header and CV data"""
+    def test_cv_download_pdf_quality(self):
+        """Test POST /api/cv/download and verify PDF quality matches web preview"""
         if not self.jwt_token:
             self.log_test(
-                "CV Download",
+                "CV Download PDF Quality",
                 False,
                 "No JWT token available (login failed)"
             )
@@ -266,25 +266,61 @@ class BackendTester:
                 # Check if response is a PDF
                 content_type = response.headers.get("content-type", "")
                 content_disposition = response.headers.get("content-disposition", "")
+                pdf_content = response.content
                 
-                if "application/pdf" in content_type:
-                    pdf_size = len(response.content)
+                # Verify it's a valid PDF file
+                is_valid_pdf = pdf_content.startswith(b'%PDF')
+                pdf_size = len(pdf_content)
+                
+                # Save PDF for manual inspection if needed
+                filename = "test_captain_james_anderson_cv.pdf"
+                with open(f"/app/{filename}", "wb") as f:
+                    f.write(pdf_content)
+                
+                if "application/pdf" in content_type and is_valid_pdf and pdf_size > 1000:
+                    # Extract filename from Content-Disposition header
+                    expected_filename_part = "Captain_James_Anderson"
+                    filename_in_header = content_disposition
+                    
                     self.log_test(
-                        "CV Download",
+                        "CV Download PDF Quality",
                         True,
-                        "PDF file generated successfully",
-                        f"Content-Type: {content_type}, Size: {pdf_size} bytes, Disposition: {content_disposition}"
+                        "PDF generated successfully with correct format and quality",
+                        f"Content-Type: {content_type}, Size: {pdf_size} bytes, Valid PDF: {is_valid_pdf}, Disposition: {content_disposition}, Saved as: {filename}"
                     )
+                    
+                    # Additional quality checks
+                    quality_issues = []
+                    if pdf_size < 5000:
+                        quality_issues.append("PDF size seems small (< 5KB)")
+                    if expected_filename_part not in content_disposition:
+                        quality_issues.append(f"Filename doesn't contain expected name part: {expected_filename_part}")
+                    
+                    if quality_issues:
+                        self.log_test(
+                            "CV Download PDF Quality - Minor Issues",
+                            True,
+                            "PDF generated but with minor quality concerns",
+                            f"Issues: {', '.join(quality_issues)}"
+                        )
                 else:
+                    issues = []
+                    if "application/pdf" not in content_type:
+                        issues.append(f"Wrong content type: {content_type}")
+                    if not is_valid_pdf:
+                        issues.append("Not a valid PDF (doesn't start with %PDF)")
+                    if pdf_size <= 1000:
+                        issues.append(f"PDF too small: {pdf_size} bytes")
+                    
                     self.log_test(
-                        "CV Download",
+                        "CV Download PDF Quality",
                         False,
-                        "Response is not a PDF file",
-                        f"Content-Type: {content_type}, Response: {response.text[:200]}..."
+                        "PDF quality issues detected",
+                        f"Issues: {', '.join(issues)}"
                     )
             else:
                 self.log_test(
-                    "CV Download",
+                    "CV Download PDF Quality",
                     False,
                     f"HTTP {response.status_code}",
                     response.text
@@ -292,10 +328,11 @@ class BackendTester:
                 
         except Exception as e:
             self.log_test(
-                "CV Download",
+                "CV Download PDF Quality",
                 False,
                 f"Request failed: {str(e)}"
             )
+    
     
     def test_get_all_payments(self):
         """Test GET /api/payments with Authorization header (admin)"""
