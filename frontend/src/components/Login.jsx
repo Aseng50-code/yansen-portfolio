@@ -6,6 +6,11 @@ import { Label } from './ui/label';
 import { Card } from './ui/card';
 import { Anchor, Mail, Lock, User } from 'lucide-react';
 import { toast } from '../hooks/use-toast';
+import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,35 +20,86 @@ const Login = () => {
     fullName: '',
     confirmPassword: ''
   });
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     
-    if (isLogin) {
-      // Mock login
-      localStorage.setItem('user', JSON.stringify({ email: formData.email, name: formData.fullName }));
-      toast({
-        title: "Login Successful!",
-        description: "Welcome back to CV Build for Seaman.",
-      });
-      navigate('/builder');
-    } else {
-      // Mock registration
-      if (formData.password !== formData.confirmPassword) {
-        toast({
-          title: "Error",
-          description: "Passwords do not match.",
-          variant: "destructive"
+    try {
+      if (isLogin) {
+        // Login with backend
+        const response = await axios.post(`${API}/auth/login`, {
+          email: formData.email,
+          password: formData.password
         });
-        return;
+        
+        const { token, user } = response.data;
+        
+        // Save to auth context
+        login(token, user);
+        
+        toast({
+          title: "Login Successful!",
+          description: `Welcome back, ${user.fullName}!`,
+        });
+        
+        // Redirect based on role
+        if (user.role === 'admin') {
+          navigate('/jobs'); // Redirect admins to job management
+        } else {
+          navigate('/builder');
+        }
+      } else {
+        // Registration
+        if (formData.password !== formData.confirmPassword) {
+          toast({
+            title: "Error",
+            description: "Passwords do not match.",
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
+        }
+        
+        const response = await axios.post(`${API}/auth/register`, {
+          email: formData.email,
+          password: formData.password,
+          fullName: formData.fullName
+        });
+        
+        toast({
+          title: "Registration Successful!",
+          description: "Please check your email to verify your account. (Demo: Auto-verified)",
+        });
+        
+        // Auto-verify for demo (in production, user would verify via email)
+        if (response.data.verificationToken) {
+          await axios.post(`${API}/auth/verify-email`, {
+            token: response.data.verificationToken
+          });
+          
+          // Auto-login after verification
+          const loginResponse = await axios.post(`${API}/auth/login`, {
+            email: formData.email,
+            password: formData.password
+          });
+          
+          login(loginResponse.data.token, loginResponse.data.user);
+          navigate('/builder');
+        }
       }
-      localStorage.setItem('user', JSON.stringify({ email: formData.email, name: formData.fullName }));
+    } catch (error) {
+      console.error('Auth error:', error);
       toast({
-        title: "Registration Successful!",
-        description: "Your account has been created.",
+        title: "Error",
+        description: error.response?.data?.detail || "Authentication failed. Please try again.",
+        variant: "destructive"
       });
-      navigate('/builder');
+    } finally {
+      setLoading(false);
     }
   };
 
