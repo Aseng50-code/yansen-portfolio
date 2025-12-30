@@ -1,17 +1,15 @@
 """
 CV PDF Generator for CV Build for SEAMAN
-Generates professional maritime CV PDFs using ReportLab
+Generates professional maritime CV PDFs using ReportLab - Matching Web Preview Design
 """
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm, cm
 from reportlab.lib.colors import HexColor, white, black
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
 from reportlab.pdfgen import canvas
 from io import BytesIO
 import base64
+import math
 
 
 # Color scheme matching the frontend
@@ -19,29 +17,141 @@ PRIMARY_COLOR = HexColor('#0C4A6E')  # sky-800
 SECONDARY_COLOR = HexColor('#075985')  # sky-700
 TEXT_COLOR = HexColor('#1f2937')  # gray-800
 LIGHT_TEXT = HexColor('#6b7280')  # gray-500
+DOT_FILLED = HexColor('#0369A1')  # sky-700
+DOT_EMPTY = HexColor('#D1D5DB')  # gray-300
+
+
+def draw_circle_clip_image(c, image_data, center_x, center_y, radius):
+    """Draw a circular photo with white border"""
+    try:
+        if ',' in image_data:
+            photo_data = base64.b64decode(image_data.split(',')[1])
+        else:
+            photo_data = base64.b64decode(image_data)
+        
+        from PIL import Image as PILImage
+        from io import BytesIO as ImgBuffer
+        from reportlab.lib.utils import ImageReader
+        
+        img_buffer = ImgBuffer(photo_data)
+        img = PILImage.open(img_buffer)
+        
+        # Create circular mask
+        size = (int(radius * 2 * 3), int(radius * 2 * 3))  # 3x for quality
+        mask = PILImage.new('L', size, 0)
+        from PIL import ImageDraw
+        draw = ImageDraw.Draw(mask)
+        draw.ellipse((0, 0, size[0], size[1]), fill=255)
+        
+        # Resize and crop image to square
+        img = img.convert('RGBA')
+        min_dim = min(img.size)
+        left = (img.size[0] - min_dim) // 2
+        top = (img.size[1] - min_dim) // 2
+        img = img.crop((left, top, left + min_dim, top + min_dim))
+        img = img.resize(size, PILImage.Resampling.LANCZOS)
+        
+        # Apply circular mask
+        output = PILImage.new('RGBA', size, (255, 255, 255, 0))
+        output.paste(img, (0, 0))
+        output.putalpha(mask)
+        
+        # Save to buffer
+        output_buffer = ImgBuffer()
+        output.save(output_buffer, format='PNG')
+        output_buffer.seek(0)
+        
+        # Draw white circle border first
+        c.setStrokeColor(white)
+        c.setLineWidth(4)
+        c.circle(center_x, center_y, radius + 2, fill=False, stroke=True)
+        
+        # Draw the circular image
+        img_reader = ImageReader(output_buffer)
+        c.drawImage(img_reader, center_x - radius, center_y - radius, 
+                   width=radius * 2, height=radius * 2, mask='auto')
+        
+        return True
+    except Exception as e:
+        print(f"Error drawing circular image: {e}")
+        return False
+
+
+def draw_icon(c, icon_type, x, y, size=4*mm):
+    """Draw simple icons for personal details"""
+    c.setStrokeColor(white)
+    c.setFillColor(white)
+    c.setLineWidth(0.5)
+    
+    cx = x + size/2
+    cy = y + size/2
+    
+    if icon_type == 'person':
+        # Head circle
+        c.circle(cx, cy + size*0.15, size*0.25, fill=True)
+        # Body arc
+        c.arc(cx - size*0.35, cy - size*0.4, cx + size*0.35, cy + size*0.1, 0, 180)
+        
+    elif icon_type == 'email':
+        # Envelope
+        c.rect(x + size*0.1, y + size*0.25, size*0.8, size*0.5, fill=False, stroke=True)
+        # V lines for envelope flap
+        c.line(x + size*0.1, y + size*0.75, cx, cy)
+        c.line(x + size*0.9, y + size*0.75, cx, cy)
+        
+    elif icon_type == 'phone':
+        # Simple phone shape
+        c.roundRect(x + size*0.2, y + size*0.1, size*0.6, size*0.8, size*0.1, fill=False, stroke=True)
+        c.line(x + size*0.35, y + size*0.2, x + size*0.65, y + size*0.2)
+        
+    elif icon_type == 'location':
+        # Location pin
+        c.circle(cx, cy + size*0.1, size*0.2, fill=True)
+        # Triangle for pin point
+        path = c.beginPath()
+        path.moveTo(cx - size*0.25, cy + size*0.1)
+        path.lineTo(cx, cy - size*0.35)
+        path.lineTo(cx + size*0.25, cy + size*0.1)
+        path.close()
+        c.drawPath(path, fill=True, stroke=False)
+        
+    elif icon_type == 'flag':
+        # Flag for nationality
+        c.line(x + size*0.2, y + size*0.1, x + size*0.2, y + size*0.9)
+        c.rect(x + size*0.2, y + size*0.5, size*0.6, size*0.35, fill=True)
+        
+    elif icon_type == 'calendar':
+        # Calendar
+        c.rect(x + size*0.15, y + size*0.15, size*0.7, size*0.6, fill=False, stroke=True)
+        c.line(x + size*0.15, y + size*0.55, x + size*0.85, y + size*0.55)
+        # Top hooks
+        c.line(x + size*0.35, y + size*0.75, x + size*0.35, y + size*0.85)
+        c.line(x + size*0.65, y + size*0.75, x + size*0.65, y + size*0.85)
+
+
+def draw_skill_dots(c, x, y, level, max_level=5, dot_size=3*mm, spacing=1.5*mm):
+    """Draw skill rating dots"""
+    for i in range(max_level):
+        if i < level:
+            c.setFillColor(DOT_FILLED)
+        else:
+            c.setFillColor(DOT_EMPTY)
+        c.circle(x + i * (dot_size + spacing), y, dot_size/2, fill=True, stroke=False)
 
 
 def generate_cv_pdf(cv_data: dict, profile_photo: str = None) -> BytesIO:
     """
-    Generate a professional CV PDF from CV data
-    
-    Args:
-        cv_data: Dictionary containing CV information
-        profile_photo: Base64 encoded profile photo (optional)
-    
-    Returns:
-        BytesIO buffer containing the PDF
+    Generate a professional CV PDF matching the web preview design
     """
     buffer = BytesIO()
-    
-    # Create PDF with custom canvas
     c = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
     
-    # Define margins and sidebar
-    sidebar_width = 75 * mm
-    content_x = sidebar_width + 10 * mm
-    content_width = width - content_x - 15 * mm
+    # Layout dimensions
+    sidebar_width = 72 * mm
+    content_x = sidebar_width + 8 * mm
+    content_width = width - content_x - 12 * mm
+    margin_left = 8 * mm
     
     # Extract data with defaults
     personal_info = cv_data.get('personalInfo', {})
@@ -52,333 +162,349 @@ def generate_cv_pdf(cv_data: dict, profile_photo: str = None) -> BytesIO:
     languages = cv_data.get('languages', [])
     
     # ==================== LEFT SIDEBAR (Blue) ====================
-    # Draw blue sidebar background
+    # Draw blue sidebar background - only top portion for personal details
+    blue_section_height = 180 * mm  # Adjust based on content
     c.setFillColor(PRIMARY_COLOR)
-    c.rect(0, 0, sidebar_width, height, fill=True, stroke=False)
+    c.rect(0, height - blue_section_height, sidebar_width, blue_section_height, fill=True, stroke=False)
     
-    # Name at top of sidebar
+    # Starting Y position
+    y_pos = height - 18 * mm
+    
+    # === NAME ===
     c.setFillColor(white)
-    c.setFont("Helvetica-Bold", 16)
+    c.setFont("Helvetica-Bold", 18)
     name = personal_info.get('fullName', 'Your Name')
     
-    # Wrap name if too long
-    y_position = height - 30 * mm
-    name_parts = name.split(' ')
-    if len(name) > 18:
-        c.drawCentredString(sidebar_width / 2, y_position, ' '.join(name_parts[:2]))
-        if len(name_parts) > 2:
-            c.drawCentredString(sidebar_width / 2, y_position - 7 * mm, ' '.join(name_parts[2:]))
-            y_position -= 14 * mm
+    # Center name with word wrap
+    name_lines = []
+    words = name.split()
+    current_line = ""
+    for word in words:
+        test_line = current_line + " " + word if current_line else word
+        if c.stringWidth(test_line, "Helvetica-Bold", 18) > sidebar_width - 16*mm:
+            if current_line:
+                name_lines.append(current_line)
+            current_line = word
         else:
-            y_position -= 7 * mm
-    else:
-        c.drawCentredString(sidebar_width / 2, y_position, name)
-        y_position -= 7 * mm
+            current_line = test_line
+    if current_line:
+        name_lines.append(current_line)
     
-    # Title/Position
-    c.setFont("Helvetica", 11)
+    for line in name_lines:
+        c.drawCentredString(sidebar_width / 2, y_pos, line)
+        y_pos -= 7 * mm
+    
+    # === TITLE/POSITION ===
+    y_pos -= 2 * mm
+    c.setFont("Helvetica-Bold", 11)
     title = personal_info.get('title', 'Professional Title')
-    if len(title) > 25:
-        # Split title into two lines
-        mid = len(title) // 2
-        space_pos = title.find(' ', mid)
-        if space_pos > 0:
-            c.drawCentredString(sidebar_width / 2, y_position, title[:space_pos])
-            c.drawCentredString(sidebar_width / 2, y_position - 5 * mm, title[space_pos+1:])
-            y_position -= 10 * mm
-        else:
-            c.drawCentredString(sidebar_width / 2, y_position, title)
-            y_position -= 5 * mm
-    else:
-        c.drawCentredString(sidebar_width / 2, y_position, title)
-        y_position -= 5 * mm
     
-    # Separator line
-    y_position -= 5 * mm
+    # Word wrap for title
+    title_lines = []
+    words = title.split()
+    current_line = ""
+    for word in words:
+        test_line = current_line + " " + word if current_line else word
+        if c.stringWidth(test_line, "Helvetica-Bold", 11) > sidebar_width - 16*mm:
+            if current_line:
+                title_lines.append(current_line)
+            current_line = word
+        else:
+            current_line = test_line
+    if current_line:
+        title_lines.append(current_line)
+    
+    for line in title_lines:
+        c.drawCentredString(sidebar_width / 2, y_pos, line)
+        y_pos -= 5 * mm
+    
+    # === PHOTO (Circular, Larger) ===
+    y_pos -= 8 * mm
+    photo_radius = 22 * mm  # Larger circular photo
+    photo_center_x = sidebar_width / 2
+    photo_center_y = y_pos - photo_radius
+    
+    if profile_photo:
+        success = draw_circle_clip_image(c, profile_photo, photo_center_x, photo_center_y, photo_radius)
+        if not success:
+            # Draw placeholder circle
+            c.setStrokeColor(white)
+            c.setLineWidth(3)
+            c.circle(photo_center_x, photo_center_y, photo_radius, fill=False, stroke=True)
+            c.setFillColor(white)
+            c.setFont("Helvetica", 9)
+            c.drawCentredString(photo_center_x, photo_center_y, "Photo")
+    else:
+        # Draw placeholder circle with border
+        c.setStrokeColor(white)
+        c.setLineWidth(3)
+        c.setFillColor(HexColor('#0A3D5C'))  # Slightly lighter blue
+        c.circle(photo_center_x, photo_center_y, photo_radius, fill=True, stroke=True)
+        c.setFillColor(white)
+        c.setFont("Helvetica", 9)
+        c.drawCentredString(photo_center_x, photo_center_y, "Upload Photo")
+    
+    y_pos = photo_center_y - photo_radius - 12 * mm
+    
+    # === PERSONAL DETAILS SECTION ===
+    c.setFillColor(white)
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(margin_left, y_pos, "PERSONAL DETAILS")
+    
+    # Underline
+    y_pos -= 3 * mm
     c.setStrokeColor(white)
     c.setLineWidth(1)
-    c.line(10 * mm, y_position, sidebar_width - 10 * mm, y_position)
+    c.line(margin_left, y_pos, sidebar_width - margin_left, y_pos)
     
-    # Profile photo placeholder
-    y_position -= 35 * mm
-    photo_size = 30 * mm
-    photo_x = (sidebar_width - photo_size) / 2
+    y_pos -= 10 * mm
     
-    # Draw photo circle border
-    c.setStrokeColor(white)
-    c.setLineWidth(2)
-    c.circle(sidebar_width / 2, y_position + photo_size / 2, photo_size / 2, fill=False)
-    
-    # If photo is provided, try to draw it
-    if profile_photo:
-        try:
-            # Handle base64 image
-            if ',' in profile_photo:
-                photo_data = base64.b64decode(profile_photo.split(',')[1])
-            else:
-                photo_data = base64.b64decode(profile_photo)
-            
-            from reportlab.lib.utils import ImageReader
-            from PIL import Image as PILImage
-            from io import BytesIO as ImgBuffer
-            
-            img_buffer = ImgBuffer(photo_data)
-            img = PILImage.open(img_buffer)
-            
-            # Create circular mask effect by clipping
-            temp_buffer = ImgBuffer()
-            img.save(temp_buffer, format='PNG')
-            temp_buffer.seek(0)
-            
-            c.drawImage(ImageReader(temp_buffer), photo_x, y_position, 
-                       width=photo_size, height=photo_size, mask='auto')
-        except Exception as e:
-            # Draw placeholder text if image fails
-            c.setFont("Helvetica", 8)
-            c.drawCentredString(sidebar_width / 2, y_position + photo_size / 2, "Photo")
-    else:
-        c.setFont("Helvetica", 8)
-        c.drawCentredString(sidebar_width / 2, y_position + photo_size / 2, "Photo")
-    
-    # Personal Details Section
-    y_position -= 15 * mm
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(8 * mm, y_position, "PERSONAL DETAILS")
-    
-    y_position -= 3 * mm
-    c.line(8 * mm, y_position, sidebar_width - 8 * mm, y_position)
-    
-    y_position -= 8 * mm
+    # Personal detail items with icons
+    icon_size = 4 * mm
+    text_x = margin_left + icon_size + 4 * mm
     c.setFont("Helvetica", 9)
     
-    # Personal details items
     details = [
-        personal_info.get('email', ''),
-        personal_info.get('phone', ''),
-        personal_info.get('location', ''),
-        personal_info.get('nationality', ''),
-        personal_info.get('dateOfBirth', '')
+        ('person', personal_info.get('fullName', '')),
+        ('email', personal_info.get('email', '')),
+        ('phone', personal_info.get('phone', '')),
+        ('location', personal_info.get('location', '')),
+        ('flag', personal_info.get('nationality', '')),
+        ('calendar', personal_info.get('dateOfBirth', '')),
     ]
     
-    for detail in details:
-        if detail:
-            # Wrap long text
-            if len(detail) > 30:
-                c.drawString(8 * mm, y_position, detail[:30])
-                c.drawString(8 * mm, y_position - 4 * mm, detail[30:])
-                y_position -= 8 * mm
+    for icon_type, value in details:
+        if value:
+            # Draw icon
+            draw_icon(c, icon_type, margin_left, y_pos - icon_size/2, icon_size)
+            
+            # Draw text with word wrap
+            c.setFillColor(white)
+            c.setFont("Helvetica", 9)
+            
+            # Check if text needs wrapping
+            max_text_width = sidebar_width - text_x - margin_left
+            if c.stringWidth(value, "Helvetica", 9) > max_text_width:
+                # Wrap text
+                words = value.split()
+                line = ""
+                line_y = y_pos
+                for word in words:
+                    test = line + " " + word if line else word
+                    if c.stringWidth(test, "Helvetica", 9) > max_text_width:
+                        c.drawString(text_x, line_y, line)
+                        line_y -= 4 * mm
+                        line = word
+                    else:
+                        line = test
+                if line:
+                    c.drawString(text_x, line_y, line)
+                    y_pos = line_y - 7 * mm
             else:
-                c.drawString(8 * mm, y_position, detail)
-                y_position -= 5 * mm
+                c.drawString(text_x, y_pos, value)
+                y_pos -= 7 * mm
     
-    # ==================== SKILLS SECTION (White area below blue) ====================
-    # End blue section and start white for skills
-    skills_start_y = y_position - 10 * mm
-    
-    # Draw white background for skills section in sidebar
+    # ==================== SKILLS SECTION (Still in sidebar, below blue) ====================
+    # Draw white background for rest of sidebar
+    white_section_top = y_pos + 5 * mm
     c.setFillColor(white)
-    c.rect(0, 0, sidebar_width, skills_start_y + 5 * mm, fill=True, stroke=False)
+    c.rect(0, 0, sidebar_width, white_section_top, fill=True, stroke=False)
     
-    # Skills title
-    y_position = skills_start_y
+    y_pos -= 10 * mm
+    
+    # Skills header
     c.setFillColor(PRIMARY_COLOR)
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(8 * mm, y_position, "SKILLS")
+    c.drawString(margin_left, y_pos, "SKILLS")
     
-    y_position -= 3 * mm
+    y_pos -= 3 * mm
     c.setStrokeColor(PRIMARY_COLOR)
-    c.line(8 * mm, y_position, sidebar_width - 8 * mm, y_position)
+    c.setLineWidth(1)
+    c.line(margin_left, y_pos, sidebar_width - margin_left, y_pos)
     
-    y_position -= 8 * mm
+    y_pos -= 8 * mm
+    
+    # Draw skills with dots
     c.setFont("Helvetica", 9)
-    c.setFillColor(TEXT_COLOR)
-    
-    for skill in skills[:8]:  # Limit to 8 skills to fit
+    for skill in skills[:8]:
         skill_name = skill.get('name', '')
         skill_level = skill.get('level', 3)
         
-        # Skill name
-        c.drawString(8 * mm, y_position, skill_name[:25])
-        
-        # Rating dots
-        y_position -= 5 * mm
-        dot_x = 8 * mm
-        for i in range(5):
-            if i < skill_level:
-                c.setFillColor(PRIMARY_COLOR)
-            else:
-                c.setFillColor(HexColor('#D1D5DB'))
-            c.circle(dot_x + 3 * mm, y_position + 1.5 * mm, 2 * mm, fill=True, stroke=False)
-            dot_x += 6 * mm
-        
-        y_position -= 6 * mm
         c.setFillColor(TEXT_COLOR)
+        c.drawString(margin_left, y_pos, skill_name[:22])
+        
+        y_pos -= 5 * mm
+        draw_skill_dots(c, margin_left, y_pos + 1*mm, skill_level)
+        y_pos -= 7 * mm
     
-    # Languages section
+    # === LANGUAGES SECTION ===
     if languages:
-        y_position -= 5 * mm
+        y_pos -= 5 * mm
         c.setFillColor(PRIMARY_COLOR)
         c.setFont("Helvetica-Bold", 11)
-        c.drawString(8 * mm, y_position, "LANGUAGES")
+        c.drawString(margin_left, y_pos, "LANGUAGES")
         
-        y_position -= 3 * mm
+        y_pos -= 3 * mm
         c.setStrokeColor(PRIMARY_COLOR)
-        c.line(8 * mm, y_position, sidebar_width - 8 * mm, y_position)
+        c.line(margin_left, y_pos, sidebar_width - margin_left, y_pos)
         
-        y_position -= 7 * mm
+        y_pos -= 7 * mm
         c.setFont("Helvetica", 9)
-        c.setFillColor(TEXT_COLOR)
         
-        for lang in languages[:5]:  # Limit to 5 languages
-            lang_name = lang.get('name', '')
-            lang_level = lang.get('level', '')
-            c.drawString(8 * mm, y_position, f"{lang_name}: {lang_level}")
-            y_position -= 5 * mm
+        for lang in languages[:5]:
+            c.setFillColor(TEXT_COLOR)
+            lang_text = f"{lang.get('name', '')}: {lang.get('level', '')}"
+            c.drawString(margin_left, y_pos, lang_text)
+            y_pos -= 5 * mm
     
     # ==================== RIGHT CONTENT AREA ====================
-    y_position = height - 25 * mm
+    y_pos = height - 20 * mm
     
-    # Profile/Summary Section
+    # === PROFILE/SUMMARY ===
     summary = personal_info.get('summary', '')
     if summary:
         c.setFillColor(PRIMARY_COLOR)
         c.setFont("Helvetica-Bold", 14)
-        c.drawString(content_x, y_position, "PROFILE")
+        c.drawString(content_x, y_pos, "PROFILE")
         
-        y_position -= 3 * mm
+        y_pos -= 4 * mm
         c.setStrokeColor(PRIMARY_COLOR)
         c.setLineWidth(2)
-        c.line(content_x, y_position, content_x + 50 * mm, y_position)
+        c.line(content_x, y_pos, content_x + 45 * mm, y_pos)
         
-        y_position -= 8 * mm
+        y_pos -= 8 * mm
         c.setFillColor(TEXT_COLOR)
         c.setFont("Helvetica", 9)
         
-        # Word wrap for summary
+        # Word wrap summary
         words = summary.split()
         line = ""
-        max_chars = 70
+        max_width = content_width
         for word in words:
-            if len(line + word) < max_chars:
-                line += word + " "
+            test = line + " " + word if line else word
+            if c.stringWidth(test, "Helvetica", 9) > max_width:
+                c.drawString(content_x, y_pos, line)
+                y_pos -= 4 * mm
+                line = word
             else:
-                c.drawString(content_x, y_position, line.strip())
-                y_position -= 4 * mm
-                line = word + " "
+                line = test
         if line:
-            c.drawString(content_x, y_position, line.strip())
-            y_position -= 4 * mm
+            c.drawString(content_x, y_pos, line)
+            y_pos -= 4 * mm
     
-    # Education Section
+    # === EDUCATION ===
     if education:
-        y_position -= 10 * mm
+        y_pos -= 10 * mm
         c.setFillColor(PRIMARY_COLOR)
         c.setFont("Helvetica-Bold", 14)
-        c.drawString(content_x, y_position, "EDUCATION")
+        c.drawString(content_x, y_pos, "EDUCATION")
         
-        y_position -= 3 * mm
+        y_pos -= 4 * mm
         c.setStrokeColor(PRIMARY_COLOR)
         c.setLineWidth(2)
-        c.line(content_x, y_position, content_x + 50 * mm, y_position)
+        c.line(content_x, y_pos, content_x + 45 * mm, y_pos)
         
-        y_position -= 8 * mm
+        y_pos -= 8 * mm
         
-        for edu in education[:3]:  # Limit to 3 education entries
+        for edu in education[:3]:
             c.setFillColor(TEXT_COLOR)
             c.setFont("Helvetica-Bold", 10)
-            c.drawString(content_x, y_position, edu.get('degree', '')[:50])
+            c.drawString(content_x, y_pos, edu.get('degree', '')[:50])
             
             # Date on right
             grad_date = edu.get('graduationDate', '')
             if grad_date:
                 c.setFont("Helvetica", 9)
-                c.drawRightString(width - 15 * mm, y_position, grad_date)
+                c.drawRightString(width - 12*mm, y_pos, grad_date)
             
-            y_position -= 5 * mm
+            y_pos -= 5 * mm
             c.setFillColor(SECONDARY_COLOR)
             c.setFont("Helvetica-Oblique", 9)
             institution = f"{edu.get('institution', '')}, {edu.get('location', '')}"
-            c.drawString(content_x, y_position, institution[:60])
+            c.drawString(content_x, y_pos, institution[:55])
             
-            y_position -= 5 * mm
+            y_pos -= 5 * mm
             desc = edu.get('description', '')
             if desc:
                 c.setFillColor(TEXT_COLOR)
                 c.setFont("Helvetica", 8)
-                c.drawString(content_x + 3 * mm, y_position, f"• {desc[:70]}")
-                y_position -= 4 * mm
+                c.drawString(content_x + 3*mm, y_pos, f"• {desc[:65]}")
+                y_pos -= 4 * mm
             
-            y_position -= 5 * mm
+            y_pos -= 5 * mm
     
-    # Experience Section
+    # === EMPLOYMENT ===
     if experience:
-        y_position -= 5 * mm
+        y_pos -= 5 * mm
         c.setFillColor(PRIMARY_COLOR)
         c.setFont("Helvetica-Bold", 14)
-        c.drawString(content_x, y_position, "EMPLOYMENT")
+        c.drawString(content_x, y_pos, "EMPLOYMENT")
         
-        y_position -= 3 * mm
+        y_pos -= 4 * mm
         c.setStrokeColor(PRIMARY_COLOR)
         c.setLineWidth(2)
-        c.line(content_x, y_position, content_x + 50 * mm, y_position)
+        c.line(content_x, y_pos, content_x + 45 * mm, y_pos)
         
-        y_position -= 8 * mm
+        y_pos -= 8 * mm
         
-        for exp in experience[:3]:  # Limit to 3 experience entries
+        for exp in experience[:3]:
             c.setFillColor(TEXT_COLOR)
             c.setFont("Helvetica-Bold", 10)
-            c.drawString(content_x, y_position, exp.get('position', '')[:45])
+            c.drawString(content_x, y_pos, exp.get('position', '')[:45])
             
-            # Date range on right
+            # Date range
             date_range = f"{exp.get('startDate', '')} - {exp.get('endDate', 'Present') if not exp.get('current') else 'Present'}"
             c.setFont("Helvetica", 9)
-            c.drawRightString(width - 15 * mm, y_position, date_range)
+            c.drawRightString(width - 12*mm, y_pos, date_range)
             
-            y_position -= 5 * mm
+            y_pos -= 5 * mm
             c.setFillColor(SECONDARY_COLOR)
             c.setFont("Helvetica-Oblique", 9)
-            company_info = f"{exp.get('employer', '')}, {exp.get('location', '')}"
-            c.drawString(content_x, y_position, company_info[:60])
+            company = f"{exp.get('employer', '')}, {exp.get('location', '')}"
+            c.drawString(content_x, y_pos, company[:55])
             
-            y_position -= 5 * mm
+            y_pos -= 5 * mm
             
             # Description bullets
             descriptions = exp.get('description', [])
             if isinstance(descriptions, list):
                 c.setFillColor(TEXT_COLOR)
                 c.setFont("Helvetica", 8)
-                for desc in descriptions[:4]:  # Limit to 4 bullet points
-                    if desc:
-                        c.drawString(content_x + 3 * mm, y_position, f"• {desc[:65]}")
-                        y_position -= 4 * mm
+                for desc in descriptions[:5]:
+                    if desc and y_pos > 30*mm:
+                        c.drawString(content_x + 3*mm, y_pos, f"• {desc[:60]}")
+                        y_pos -= 4 * mm
             
-            y_position -= 5 * mm
+            y_pos -= 5 * mm
     
-    # Certificates Section
-    if certificates and y_position > 50 * mm:
-        y_position -= 5 * mm
+    # === CERTIFICATES ===
+    if certificates and y_pos > 50*mm:
+        y_pos -= 5 * mm
         c.setFillColor(PRIMARY_COLOR)
         c.setFont("Helvetica-Bold", 14)
-        c.drawString(content_x, y_position, "CERTIFICATES & LICENSES")
+        c.drawString(content_x, y_pos, "CERTIFICATES & LICENSES")
         
-        y_position -= 3 * mm
+        y_pos -= 4 * mm
         c.setStrokeColor(PRIMARY_COLOR)
         c.setLineWidth(2)
-        c.line(content_x, y_position, content_x + 60 * mm, y_position)
+        c.line(content_x, y_pos, content_x + 55 * mm, y_pos)
         
-        y_position -= 7 * mm
+        y_pos -= 7 * mm
         
-        for cert in certificates[:5]:  # Limit to 5 certificates
+        for cert in certificates[:5]:
+            if y_pos < 25*mm:
+                break
+                
             c.setFillColor(TEXT_COLOR)
             c.setFont("Helvetica-Bold", 9)
-            c.drawString(content_x, y_position, cert.get('name', '')[:45])
+            c.drawString(content_x, y_pos, cert.get('name', '')[:45])
             
             cert_date = cert.get('date', '')
             if cert_date:
                 c.setFont("Helvetica", 8)
-                c.drawRightString(width - 15 * mm, y_position, cert_date)
+                c.drawRightString(width - 12*mm, y_pos, cert_date)
             
-            y_position -= 4 * mm
+            y_pos -= 4 * mm
             c.setFillColor(LIGHT_TEXT)
             c.setFont("Helvetica", 8)
             issuer = cert.get('issuer', '')
@@ -386,11 +512,11 @@ def generate_cv_pdf(cv_data: dict, profile_photo: str = None) -> BytesIO:
             cert_info = f"{issuer}"
             if validity:
                 cert_info += f" | Valid: {validity}"
-            c.drawString(content_x, y_position, cert_info[:60])
+            c.drawString(content_x, y_pos, cert_info[:55])
             
-            y_position -= 6 * mm
+            y_pos -= 6 * mm
     
-    # Save the PDF
+    # Save PDF
     c.save()
     buffer.seek(0)
     return buffer
