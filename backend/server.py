@@ -389,6 +389,392 @@ async def comment_on_job(
     return {"message": "Comment added successfully", "comment": comment}
 
 
+# ==================== ANNOUNCEMENT ENDPOINTS ====================
+
+# Rate limiting for comments (simple in-memory, use Redis in production)
+comment_rate_limits = {}
+
+def check_comment_rate_limit(user_id: str) -> bool:
+    """Check if user can comment (max 5 comments per minute)"""
+    now = datetime.utcnow()
+    if user_id not in comment_rate_limits:
+        comment_rate_limits[user_id] = []
+    
+    # Remove old timestamps
+    comment_rate_limits[user_id] = [
+        t for t in comment_rate_limits[user_id] 
+        if (now - t).total_seconds() < 60
+    ]
+    
+    if len(comment_rate_limits[user_id]) >= 5:
+        return False
+    
+    comment_rate_limits[user_id].append(now)
+    return True
+
+# Simple profanity filter
+BLOCKED_WORDS = ["spam", "scam", "fake"]  # Add more as needed
+
+def filter_profanity(text: str) -> str:
+    """Basic profanity filter"""
+    filtered = text
+    for word in BLOCKED_WORDS:
+        filtered = filtered.lower().replace(word, "*" * len(word))
+    return filtered
+
+@api_router.get("/announcements")
+async def get_announcements(status: Optional[str] = "published"):
+    """Get all announcements (public)"""
+    query = {"status": status} if status else {}
+    announcements = await db.announcements.find(query, {"_id": 0}).sort("createdAt", -1).to_list(100)
+    return {"announcements": announcements}
+
+@api_router.get("/announcements/{announcement_id}")
+async def get_announcement(announcement_id: str):
+    """Get a single announcement by ID"""
+    announcement = await db.announcements.find_one({"id": announcement_id}, {"_id": 0})
+    if not announcement:
+        raise HTTPException(status_code=404, detail="Announcement not found")
+    
+    # Get comments for this announcement
+    comments = await db.announcement_comments.find(
+        {"announcementId": announcement_id, "isModerated": False},
+        {"_id": 0}
+    ).sort("createdAt", -1).to_list(100)
+    
+    announcement["comments"] = comments
+    return {"announcement": announcement}
+
+@api_router.post("/announcements")
+async def create_announcement(
+    announcement_data: AnnouncementCreate,
+    authorization: Optional[str] = Header(None)
+):
+    """Create a new announcement (admin only)"""
+    require_admin(authorization)
+    current_user = get_current_user(authorization)
+    
+    # Get admin user details
+    admin = await db.users.find_one({"id": current_user["userId"]})
+    
+    # Sanitize inputs
+    title = sanitize_string(announcement_data.title)
+    body = sanitize_string(announcement_data.body)
+    contact_info = sanitize_string(announcement_data.contactInfo) if announcement_data.contactInfo else None
+    tags = [sanitize_string(t) for t in announcement_data.tags]
+    
+    # Validate
+    if not validate_input_length(title, 200):
+        raise HTTPException(status_code=400, detail="Title too long (max 200 chars)")
+    if not validate_input_length(body, 10000):
+        raise HTTPException(status_code=400, detail="Body too long (max 10000 chars)")
+    
+    announcement = Announcement(
+        title=title,
+        coverImage=announcement_data.coverImage,
+        body=body,
+        positions=[p.dict() for p in announcement_data.positions],
+        contactInfo=contact_info,
+        tags=tags,
+        status=announcement_data.status,
+        authorId=current_user["userId"],
+        authorName=admin["fullName"] if admin else "Admin"
+    )
+    
+    await db.announcements.insert_one(announcement.dict())
+    
+    return {"message": "Announcement created successfully", "announcement": announcement}
+
+@api_router.put("/announcements/{announcement_id}")
+async def update_announcement(
+    announcement_id: str,
+    announcement_data: AnnouncementCreate,
+    authorization: Optional[str] = Header(None)
+):
+    """Update an announcement (admin only)"""
+    require_admin(authorization)
+    
+    existing = await db.announcements.find_one({"id": announcement_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Announcement not found")
+    
+    update_data = {
+        "title": sanitize_string(announcement_data.title),
+        "body": sanitize_string(announcement_data.body),
+        "coverImage": announcement_data.coverImage,
+        "positions": [p.dict() for p in announcement_data.positions],
+        "contactInfo": sanitize_string(announcement_data.contactInfo) if announcement_data.contactInfo else None,
+        "tags": [sanitize_string(t) for t in announcement_data.tags],
+        "status": announcement_data.status,
+        "updatedAt": datetime.utcnow()
+    }
+    
+    await db.announcements.update_one({"id": announcement_id}, {"$set": update_data})
+    
+    updated = await db.announcements.find_one({"id": announcement_id}, {"_id": 0})
+    return {"message": "Announcement updated successfully", "announcement": updated}
+
+@api_router.delete("/announcements/{announcement_id}")
+async def delete_announcement(
+    announcement_id: str,
+    authorization: Optional[str] = Header(None)
+):
+    """Delete an announcement (admin only)"""
+    require_admin(authorization)
+    
+    result = await db.announcements.delete_one({"id": announcement_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Announcement not found")
+    
+    # Also delete associated comments and likes
+    await db.announcement_comments.delete_many({"announcementId": announcement_id})
+    await db.announcement_likes.delete_many({"announcementId": announcement_id})
+    
+    return {"message": "Announcement deleted successfully"}
+
+@api_router.post("/announcements/{announcement_id}/like")
+async def like_announcement(
+    announcement_id: str,
+    authorization: Optional[str] = Header(None)
+):
+    """Like/unlike an announcement"""
+    current_user = get_current_user(authorization)
+    user_id = current_user["userId"]
+    
+    announcement = await db.announcements.find_one({"id": announcement_id})
+    if not announcement:
+        raise HTTPException(status_code=404, detail="Announcement not found")
+    
+    # Check if already liked
+    existing_like = await db.announcement_likes.find_one({
+        "userId": user_id,
+        "announcementId": announcement_id
+    })
+    
+    if existing_like:
+        # Unlike
+        await db.announcement_likes.delete_one({"_id": existing_like["_id"]})
+        await db.announcements.update_one(
+            {"id": announcement_id},
+            {
+                "$inc": {"likes": -1},
+                "$pull": {"likedBy": user_id}
+            }
+        )
+        message = "Announcement unliked"
+        liked = False
+    else:
+        # Like
+        from models import AnnouncementLike
+        like = AnnouncementLike(userId=user_id, announcementId=announcement_id)
+        await db.announcement_likes.insert_one(like.dict())
+        await db.announcements.update_one(
+            {"id": announcement_id},
+            {
+                "$inc": {"likes": 1},
+                "$push": {"likedBy": user_id}
+            }
+        )
+        message = "Announcement liked"
+        liked = True
+    
+    updated = await db.announcements.find_one({"id": announcement_id}, {"_id": 0})
+    return {"message": message, "liked": liked, "likes": updated["likes"]}
+
+@api_router.post("/announcements/{announcement_id}/comment")
+async def comment_on_announcement(
+    announcement_id: str,
+    comment_data: AnnouncementCommentCreate,
+    authorization: Optional[str] = Header(None)
+):
+    """Add a comment to an announcement"""
+    current_user = get_current_user(authorization)
+    user_id = current_user["userId"]
+    
+    # Rate limiting
+    if not check_comment_rate_limit(user_id):
+        raise HTTPException(status_code=429, detail="Too many comments. Please wait a moment.")
+    
+    # Validate content
+    content = sanitize_string(comment_data.content)
+    if not content.strip():
+        raise HTTPException(status_code=400, detail="Comment cannot be empty")
+    if not validate_input_length(content, 1000):
+        raise HTTPException(status_code=400, detail="Comment too long (max 1000 chars)")
+    
+    # Apply profanity filter
+    content = filter_profanity(content)
+    
+    # Check announcement exists
+    announcement = await db.announcements.find_one({"id": announcement_id})
+    if not announcement:
+        raise HTTPException(status_code=404, detail="Announcement not found")
+    
+    # Get user's public profile
+    user = await db.users.find_one({"id": user_id})
+    profile = await db.public_profiles.find_one({"userId": user_id})
+    
+    display_name = profile.get("displayName") if profile else user.get("fullName", "User")
+    avatar_url = profile.get("avatarUrl") if profile else None
+    
+    comment = AnnouncementComment(
+        announcementId=announcement_id,
+        userId=user_id,
+        displayName=display_name,
+        avatarUrl=avatar_url,
+        content=content
+    )
+    
+    await db.announcement_comments.insert_one(comment.dict())
+    
+    # Update comment count
+    await db.announcements.update_one(
+        {"id": announcement_id},
+        {"$inc": {"commentsCount": 1}}
+    )
+    
+    return {"message": "Comment added successfully", "comment": comment.dict()}
+
+@api_router.delete("/announcements/{announcement_id}/comments/{comment_id}")
+async def delete_announcement_comment(
+    announcement_id: str,
+    comment_id: str,
+    authorization: Optional[str] = Header(None)
+):
+    """Delete a comment (own comment or admin can delete any)"""
+    current_user = get_current_user(authorization)
+    user_id = current_user["userId"]
+    is_admin = current_user.get("role") == "admin"
+    
+    comment = await db.announcement_comments.find_one({"id": comment_id})
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    # Check permission
+    if comment["userId"] != user_id and not is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
+    
+    await db.announcement_comments.delete_one({"id": comment_id})
+    
+    # Update comment count
+    await db.announcements.update_one(
+        {"id": announcement_id},
+        {"$inc": {"commentsCount": -1}}
+    )
+    
+    return {"message": "Comment deleted successfully"}
+
+@api_router.put("/announcements/comments/{comment_id}/moderate")
+async def moderate_comment(
+    comment_id: str,
+    authorization: Optional[str] = Header(None)
+):
+    """Moderate (hide) a comment (admin only)"""
+    require_admin(authorization)
+    current_user = get_current_user(authorization)
+    
+    result = await db.announcement_comments.update_one(
+        {"id": comment_id},
+        {
+            "$set": {
+                "isModerated": True,
+                "moderatedBy": current_user["userId"],
+                "moderatedAt": datetime.utcnow()
+            }
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    return {"message": "Comment moderated successfully"}
+
+
+# ==================== PUBLIC PROFILE ENDPOINTS ====================
+
+@api_router.get("/profile/settings")
+async def get_profile_settings(authorization: Optional[str] = Header(None)):
+    """Get current user's profile settings"""
+    current_user = get_current_user(authorization)
+    
+    profile = await db.public_profiles.find_one({"userId": current_user["userId"]}, {"_id": 0})
+    
+    if not profile:
+        # Return default settings
+        return {
+            "profile": {
+                "userId": current_user["userId"],
+                "isPublic": False,
+                "displayName": None,
+                "rank": None,
+                "vesselExperience": None,
+                "nationality": None,
+                "city": None,
+                "bio": None,
+                "linkedIn": None,
+                "website": None,
+                "avatarUrl": None
+            }
+        }
+    
+    return {"profile": profile}
+
+@api_router.put("/profile/settings")
+async def update_profile_settings(
+    settings: PublicProfileSettings,
+    authorization: Optional[str] = Header(None)
+):
+    """Update user's public profile settings"""
+    current_user = get_current_user(authorization)
+    
+    # Sanitize inputs
+    update_data = {
+        "userId": current_user["userId"],
+        "isPublic": settings.isPublic,
+        "displayName": sanitize_string(settings.displayName) if settings.displayName else None,
+        "rank": sanitize_string(settings.rank) if settings.rank else None,
+        "vesselExperience": sanitize_string(settings.vesselExperience) if settings.vesselExperience else None,
+        "nationality": sanitize_string(settings.nationality) if settings.nationality else None,
+        "city": sanitize_string(settings.city) if settings.city else None,
+        "bio": sanitize_string(settings.bio) if settings.bio else None,
+        "linkedIn": sanitize_string(settings.linkedIn) if settings.linkedIn else None,
+        "website": sanitize_string(settings.website) if settings.website else None,
+        "avatarUrl": settings.avatarUrl,
+        "updatedAt": datetime.utcnow()
+    }
+    
+    await db.public_profiles.update_one(
+        {"userId": current_user["userId"]},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return {"message": "Profile settings updated successfully", "profile": update_data}
+
+@api_router.get("/profile/public/{user_id}")
+async def get_public_profile(user_id: str):
+    """Get a user's public profile (only if visibility is ON)"""
+    profile = await db.public_profiles.find_one({"userId": user_id}, {"_id": 0})
+    
+    if not profile or not profile.get("isPublic", False):
+        raise HTTPException(status_code=404, detail="Profile not available")
+    
+    # Return only safe public fields - NEVER include email, phone, DOB, etc.
+    return {
+        "profile": PublicProfileResponse(
+            displayName=profile.get("displayName"),
+            rank=profile.get("rank"),
+            vesselExperience=profile.get("vesselExperience"),
+            nationality=profile.get("nationality"),
+            city=profile.get("city"),
+            bio=profile.get("bio"),
+            linkedIn=profile.get("linkedIn"),
+            website=profile.get("website"),
+            avatarUrl=profile.get("avatarUrl")
+        )
+    }
+
+
 # ==================== PAYMENT ENDPOINTS ====================
 
 @api_router.post("/payments")
