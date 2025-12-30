@@ -30,6 +30,36 @@ class UserResponse(UserBase):
     role: str
     isVerified: bool
 
+# Public Profile Settings
+class PublicProfileSettings(BaseModel):
+    userId: str
+    isPublic: bool = False
+    displayName: Optional[str] = None
+    rank: Optional[str] = None
+    vesselExperience: Optional[str] = None
+    nationality: Optional[str] = None
+    city: Optional[str] = None
+    bio: Optional[str] = None
+    linkedIn: Optional[str] = None
+    website: Optional[str] = None
+    avatarUrl: Optional[str] = None
+    updatedAt: datetime = Field(default_factory=datetime.utcnow)
+    
+    class Config:
+        json_encoders = {datetime: lambda v: v.isoformat()}
+
+class PublicProfileResponse(BaseModel):
+    """Safe public profile data - no sensitive info"""
+    displayName: Optional[str] = None
+    rank: Optional[str] = None
+    vesselExperience: Optional[str] = None
+    nationality: Optional[str] = None
+    city: Optional[str] = None
+    bio: Optional[str] = None
+    linkedIn: Optional[str] = None
+    website: Optional[str] = None
+    avatarUrl: Optional[str] = None
+
 # Job Models
 class JobComment(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -66,6 +96,69 @@ class Job(JobBase):
 
 class CommentCreate(BaseModel):
     text: str
+
+# Announcement Models
+class AnnouncementPosition(BaseModel):
+    title: str
+    description: Optional[str] = None
+
+class AnnouncementCreate(BaseModel):
+    title: str
+    coverImage: Optional[str] = None  # Base64 or URL
+    body: str  # Rich text / markdown content
+    positions: List[AnnouncementPosition] = []
+    contactInfo: Optional[str] = None  # Email/phone/instructions
+    tags: List[str] = []
+    status: str = "published"  # "draft", "published"
+
+class Announcement(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    coverImage: Optional[str] = None
+    body: str
+    positions: List[AnnouncementPosition] = []
+    contactInfo: Optional[str] = None
+    tags: List[str] = []
+    status: str = "published"
+    authorId: str
+    authorName: str
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    updatedAt: datetime = Field(default_factory=datetime.utcnow)
+    likes: int = 0
+    likedBy: List[str] = []
+    commentsCount: int = 0
+    
+    class Config:
+        json_encoders = {datetime: lambda v: v.isoformat()}
+
+# Announcement Like Model
+class AnnouncementLike(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    userId: str
+    announcementId: str
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    
+    class Config:
+        json_encoders = {datetime: lambda v: v.isoformat()}
+
+# Announcement Comment Model
+class AnnouncementComment(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    announcementId: str
+    userId: str
+    displayName: str  # Only display name, no sensitive data
+    avatarUrl: Optional[str] = None
+    content: str
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    isModerated: bool = False
+    moderatedBy: Optional[str] = None
+    moderatedAt: Optional[datetime] = None
+    
+    class Config:
+        json_encoders = {datetime: lambda v: v.isoformat()}
+
+class AnnouncementCommentCreate(BaseModel):
+    content: str
 
 # Payment Models
 class PaymentBase(BaseModel):
