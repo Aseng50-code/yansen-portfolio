@@ -191,7 +191,9 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Payment Page with Bank Transfer"
+    - "Payment Flow"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -201,3 +203,5 @@ agent_communication:
     message: "Implemented Skills & Languages management tab in CVBuilderPro.jsx. Added 5th tab with skill category dropdowns (Deck/Engine/Common), 1-5 rating system for skills, and language management with proficiency levels. Please test the following flows: 1) Adding skills from dropdowns 2) Changing skill ratings 3) Deleting skills 4) Adding/editing/deleting languages 5) CV Preview shows skills and languages correctly"
   - agent: "testing"
     message: "TESTING COMPLETED SUCCESSFULLY: All Skills & Languages management functionality is working perfectly. Tested all requested flows: ✅ Skills tab navigation ✅ Adding skills from all three dropdowns (Deck Officer, Engine Officer, Common Skills) ✅ 1-5 rating system with visual feedback ✅ Skill deletion ✅ Language management (add/edit/delete) with proficiency levels ✅ CV Preview correctly displays skills with dot ratings and languages with proficiency levels. No issues found - all functionality working as expected."
+  - agent: "main"
+    message: "Implemented Payment Page with Bank Transfer: Bank BNI, Account CV Jesse Energi Sejahtera, No. 3334433003. Added payment proof upload, status checking, and PDF download after confirmation. Backend endpoints: POST /api/payments (submit payment), GET /api/payments/check-status (check if can download), POST /api/cv/download (generate PDF). Please test the payment flow."
