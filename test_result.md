@@ -258,13 +258,24 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Social Media Fields in CV Builder"
-    - "CV Preview with Social Media Icons"
-    - "Payment Confirmation and Download Flow"
-    - "Login Page"
+    - "Maritime Job Openings Feature"
+    - "Rich Text Editor for Admin"
+    - "Social Engagement (Like, Comment, Share)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
+
+  - task: "Maritime Job Openings Page"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/MaritimeJobOpenings.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented Maritime Job Openings feature with: Social media feed style cards, Rich text editor (ReactQuill) for admin, Like/Comment/Share functionality (LinkedIn and Facebook only), Backend APIs for CRUD operations on announcements. Fixed bcrypt issue. Need comprehensive testing."
 
   - task: "A4 Format CV Preview"
     implemented: true
