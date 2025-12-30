@@ -15,7 +15,9 @@ from models import (
     UserCreate, UserLogin, User, UserResponse, Token, VerifyEmail, ChangePassword,
     JobCreate, Job, CommentCreate, JobComment,
     PaymentCreate, Payment, PaymentReject,
-    Settings, PaymentInfo
+    Settings, PaymentInfo,
+    AnnouncementCreate, Announcement, AnnouncementComment, AnnouncementCommentCreate,
+    PublicProfileSettings, PublicProfileResponse
 )
 from auth_utils import (
     hash_password, verify_password, create_access_token, 
