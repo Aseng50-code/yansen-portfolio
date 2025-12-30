@@ -185,6 +185,48 @@ async def get_me(authorization: Optional[str] = Header(None)):
         isVerified=user["isVerified"]
     )
 
+@api_router.post("/auth/change-password")
+async def change_password(
+    password_data: ChangePassword,
+    authorization: Optional[str] = Header(None)
+):
+    """Change user password"""
+    current_user = get_current_user(authorization)
+    
+    # Validate new password
+    is_valid, error_msg = validate_password(password_data.newPassword)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+    
+    # Get user from database
+    user = await db.users.find_one({"id": current_user["userId"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Verify current password
+    if not verify_password(password_data.currentPassword, user["hashedPassword"]):
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+    
+    # Check if new password is different from current
+    if password_data.currentPassword == password_data.newPassword:
+        raise HTTPException(status_code=400, detail="New password must be different from current password")
+    
+    # Hash new password
+    new_hashed_password = hash_password(password_data.newPassword)
+    
+    # Update password
+    await db.users.update_one(
+        {"id": current_user["userId"]},
+        {"$set": {"hashedPassword": new_hashed_password}}
+    )
+    
+    logger.info(f"Password changed for user: {user['email']}")
+    
+    return {
+        "message": "Password changed successfully",
+        "email": user["email"]
+    }
+
 
 # ==================== JOB ENDPOINTS ====================
 
