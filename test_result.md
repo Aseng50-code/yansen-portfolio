@@ -267,15 +267,18 @@ test_plan:
 
   - task: "Maritime Job Openings Page"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/components/MaritimeJobOpenings.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented Maritime Job Openings feature with: Social media feed style cards, Rich text editor (ReactQuill) for admin, Like/Comment/Share functionality (LinkedIn and Facebook only), Backend APIs for CRUD operations on announcements. Fixed bcrypt issue. Need comprehensive testing."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE MARITIME JOB OPENINGS BACKEND API TESTING COMPLETED: ✅ GET /api/announcements - Successfully retrieved 2 existing announcements ✅ POST /api/auth/login - Admin login working with JWT token (yansen@jesseenergisejahtera.com / 123456) ✅ POST /api/announcements - Created announcement with rich HTML content preserved (h2, strong, ul tags) ✅ PUT /api/announcements/{id} - Updated announcement successfully ✅ DELETE /api/announcements/{id} - Deleted announcement and verified removal ✅ POST /api/announcements/{id}/like - Like functionality working (requires auth) ✅ POST /api/announcements/{id}/comment - Comment functionality working (requires auth) ✅ GET /api/announcements/{id} - Single announcement retrieval with comments working. All 8 backend API tests passed with 100% success rate. Rich text HTML content properly preserved and sanitized. bcrypt authentication working correctly."
 
   - task: "A4 Format CV Preview"
     implemented: true
