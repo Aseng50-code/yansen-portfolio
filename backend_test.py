@@ -98,6 +98,8 @@ class BackendTester:
         self.session = requests.Session()
         self.jwt_token = None
         self.test_results = []
+        self.created_announcement_id = None
+        self.created_comment_id = None
         
     def log_test(self, test_name, success, message, details=None):
         """Log test results"""
