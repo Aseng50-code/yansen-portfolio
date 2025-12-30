@@ -248,7 +248,16 @@ async def create_job(
     """Create a new job (admin only)"""
     require_admin(authorization)
     
-    job = Job(**job_data.dict())
+    # Security: Sanitize input to prevent XSS
+    sanitized_data = sanitize_dict(job_data.dict())
+    
+    # Validate input lengths
+    if not validate_input_length(sanitized_data.get("title", ""), 200):
+        raise HTTPException(status_code=400, detail="Title too long")
+    if not validate_input_length(sanitized_data.get("requirements", ""), 1000):
+        raise HTTPException(status_code=400, detail="Requirements text too long")
+    
+    job = Job(**sanitized_data)
     await db.jobs.insert_one(job.dict())
     
     return {"message": "Job created successfully", "job": job}
