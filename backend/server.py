@@ -491,12 +491,12 @@ async def get_payments(authorization: Optional[str] = Header(None)):
     """Get all payments (admin only)"""
     require_admin(authorization)
     
-    payments = await db.payments.find().sort("createdAt", -1).to_list(1000)
+    payments = await db.payments.find({}, {"_id": 0}).sort("createdAt", -1).to_list(1000)
     
     # Enrich with user data
     enriched_payments = []
     for payment in payments:
-        user = await db.users.find_one({"id": payment["userId"]})
+        user = await db.users.find_one({"id": payment["userId"]}, {"_id": 0})
         payment_copy = payment.copy()
         payment_copy["user"] = {
             "fullName": user["fullName"],
