@@ -14,39 +14,43 @@ BASE_URL = "https://maritime-cv.preview.emergentagent.com/api"
 ADMIN_EMAIL = "yansen@jesseenergisejahtera.com"
 ADMIN_PASSWORD = "123456"
 
-# Test data
+# Test data - Using the specific CV data from review request
 SAMPLE_CV_DATA = {
     "personalInfo": {
-        "fullName": "Test Captain",
-        "title": "Master Mariner",
-        "email": "test@test.com",
-        "phone": "+1234567890",
-        "location": "Jakarta, Indonesia",
-        "summary": "Experienced seaman."
+        "fullName": "Captain James Anderson",
+        "title": "Master Mariner (Chief Officer)",
+        "email": "james.anderson@maritime.com",
+        "phone": "+1 (555) 789-0123",
+        "location": "Miami, Florida, USA",
+        "nationality": "American",
+        "dateOfBirth": "January 15, 1985",
+        "linkedin": "linkedin.com/in/jamesanderson",
+        "instagram": "@captainjames",
+        "summary": "Experienced Master Mariner with over 12 years of sea service."
     },
     "experience": [
         {
-            "position": "Captain",
-            "employer": "Test Shipping",
-            "location": "Worldwide",
-            "startDate": "2020",
-            "endDate": "Present",
-            "description": ["Led crew of 25"]
+            "position": "Second Officer",
+            "employer": "Maersk Line",
+            "location": "Container Vessels",
+            "startDate": "Jan 2020",
+            "current": True,
+            "description": ["Navigation watch keeping"]
         }
     ],
     "education": [
         {
-            "degree": "Maritime Certificate",
-            "institution": "Academy",
-            "location": "Indonesia",
-            "graduationDate": "2015"
+            "degree": "Master Mariner Certificate",
+            "institution": "Maritime Academy",
+            "location": "NY",
+            "graduationDate": "May 2016"
         }
     ],
     "certificates": [
         {
-            "name": "STCW",
+            "name": "STCW Basic Safety",
             "issuer": "IMO",
-            "date": "2015",
+            "date": "2014",
             "validity": "Lifetime"
         }
     ],
@@ -54,12 +58,16 @@ SAMPLE_CV_DATA = {
         {
             "name": "Navigation",
             "level": 5
+        },
+        {
+            "name": "ECDIS",
+            "level": 4
         }
     ],
     "languages": [
         {
             "name": "English",
-            "level": "Fluent"
+            "level": "Native"
         }
     ]
 }
