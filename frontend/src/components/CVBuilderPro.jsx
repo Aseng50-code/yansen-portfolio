@@ -157,180 +157,266 @@ const CVBuilderPro = () => {
   };
 
   const CVPreviewContent = () => (
-    <div className="bg-white p-12 max-w-4xl mx-auto" style={{ fontFamily: 'Arial, sans-serif' }}>
-      {/* Header Section */}
-      <div className="border-b-4 border-sky-800 pb-6 mb-6">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h1 className="text-4xl font-bold text-sky-900 mb-2">{cvData.personalInfo.fullName || 'YOUR NAME'}</h1>
-            <h2 className="text-xl text-gray-700 mb-4">{cvData.personalInfo.title || 'Professional Title'}</h2>
-            
-            <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+    <div className="bg-white" style={{ fontFamily: 'Arial, sans-serif', width: '210mm', minHeight: '297mm' }}>
+      <div className="flex">
+        {/* Left Sidebar - Blue Section */}
+        <div className="w-[35%] bg-gradient-to-b from-sky-800 to-sky-900 text-white p-8 relative">
+          {/* Name and Title */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold mb-2 leading-tight">
+              {cvData.personalInfo.fullName || 'YOUR NAME'}
+            </h1>
+            <div className="h-1 w-24 bg-white mx-auto mb-3"></div>
+            <h2 className="text-lg font-semibold">
+              {cvData.personalInfo.title || 'Professional Title'}
+            </h2>
+          </div>
+
+          {/* Photo Circle - Positioned to overflow */}
+          <div className="flex justify-center mb-8 relative" style={{ marginTop: '-20px' }}>
+            {profilePhoto ? (
+              <div className="relative">
+                <div className="w-48 h-48 rounded-full border-8 border-white overflow-hidden shadow-2xl bg-gray-200">
+                  <img
+                    src={profilePhoto}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="w-48 h-48 rounded-full border-8 border-white bg-gray-300 flex items-center justify-center shadow-2xl">
+                <span className="text-gray-500 text-sm text-center px-4">Upload Photo</span>
+              </div>
+            )}
+          </div>
+
+          {/* Personal Details */}
+          <div className="mb-8">
+            <h3 className="text-xl font-bold mb-4 uppercase border-b-2 border-white pb-2">
+              Personal Details
+            </h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="break-words">{cvData.personalInfo.fullName || 'Your Name'}</p>
+                </div>
+              </div>
+
               {cvData.personalInfo.email && (
-                <div className="flex items-center">
-                  <Mail className="w-4 h-4 mr-2 text-sky-700" />
-                  <span>{cvData.personalInfo.email}</span>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="break-words">{cvData.personalInfo.email}</p>
+                  </div>
                 </div>
               )}
+
               {cvData.personalInfo.phone && (
-                <div className="flex items-center">
-                  <Phone className="w-4 h-4 mr-2 text-sky-700" />
-                  <span>{cvData.personalInfo.phone}</span>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="break-words">{cvData.personalInfo.phone}</p>
+                  </div>
                 </div>
               )}
+
               {cvData.personalInfo.location && (
-                <div className="flex items-center">
-                  <MapPin className="w-4 h-4 mr-2 text-sky-700" />
-                  <span>{cvData.personalInfo.location}</span>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="break-words">{cvData.personalInfo.location}</p>
+                  </div>
                 </div>
               )}
+
               {cvData.personalInfo.nationality && (
-                <div className="flex items-center">
-                  <Globe className="w-4 h-4 mr-2 text-sky-700" />
-                  <span>{cvData.personalInfo.nationality}</span>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="break-words">{cvData.personalInfo.nationality}</p>
+                  </div>
                 </div>
               )}
+
               {cvData.personalInfo.dateOfBirth && (
-                <div className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-2 text-sky-700" />
-                  <span>{cvData.personalInfo.dateOfBirth}</span>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="break-words">{cvData.personalInfo.dateOfBirth}</p>
+                  </div>
                 </div>
               )}
             </div>
           </div>
-          
-          {profilePhoto && (
-            <div className="ml-6">
-              <img
-                src={profilePhoto}
-                alt="Profile"
-                className="w-32 h-32 object-cover border-4 border-sky-700 rounded"
-              />
+
+          {/* Skills Section */}
+          {cvData.skills && cvData.skills.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-xl font-bold mb-4 uppercase border-b-2 border-white pb-2">
+                Skills
+              </h3>
+              <div className="space-y-3">
+                {cvData.skills.map((skill, idx) => (
+                  <div key={idx}>
+                    <p className="text-sm mb-1 font-medium">{skill.name}</p>
+                    <div className="flex space-x-1">
+                      {[1, 2, 3, 4, 5].map((level) => (
+                        <div
+                          key={level}
+                          className={`w-4 h-4 rounded-full ${
+                            level <= (skill.level || 3)
+                              ? 'bg-white'
+                              : 'bg-white/30'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Languages */}
+          {cvData.languages && cvData.languages.length > 0 && (
+            <div>
+              <h3 className="text-xl font-bold mb-4 uppercase border-b-2 border-white pb-2">
+                Languages
+              </h3>
+              <div className="space-y-2 text-sm">
+                {cvData.languages.map((lang, idx) => (
+                  <div key={idx} className="flex justify-between">
+                    <span className="font-semibold">{lang.name}</span>
+                    <span className="opacity-90">{lang.level}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
-      </div>
 
-      {/* Professional Summary */}
-      {cvData.personalInfo.summary && (
-        <div className="mb-6">
-          <h3 className="text-xl font-bold text-sky-900 mb-3 uppercase border-b-2 border-sky-300 pb-1">
-            Professional Summary
-          </h3>
-          <p className="text-sm text-gray-700 leading-relaxed text-justify">
-            {cvData.personalInfo.summary}
-          </p>
-        </div>
-      )}
-
-      {/* Professional Experience */}
-      {cvData.experience && cvData.experience.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-xl font-bold text-sky-900 mb-3 uppercase border-b-2 border-sky-300 pb-1">
-            Sea Service / Professional Experience
-          </h3>
-          {cvData.experience.map((exp) => (
-            <div key={exp.id} className="mb-4">
-              <div className="flex justify-between items-start mb-1">
-                <div>
-                  <h4 className="text-base font-bold text-gray-900">{exp.position}</h4>
-                  <p className="text-sm text-gray-700">{exp.employer} | {exp.location}</p>
-                </div>
-                <p className="text-sm text-gray-600 font-semibold">
-                  {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
-                </p>
-              </div>
-              {exp.description && exp.description.length > 0 && (
-                <ul className="text-sm text-gray-700 mt-2 space-y-1 ml-4">
-                  {exp.description.map((item, idx) => (
-                    item && <li key={idx} className="leading-relaxed list-disc">{item}</li>
-                  ))}
-                </ul>
-              )}
+        {/* Right Main Content - White Section */}
+        <div className="w-[65%] p-8 bg-white">
+          {/* Profile Section */}
+          {cvData.personalInfo.summary && (
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-sky-900 mb-3 uppercase border-b-4 border-sky-800 pb-2">
+                Profile
+              </h3>
+              <p className="text-sm text-gray-800 leading-relaxed text-justify">
+                {cvData.personalInfo.summary}
+              </p>
             </div>
-          ))}
-        </div>
-      )}
+          )}
 
-      {/* Education */}
-      {cvData.education && cvData.education.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-xl font-bold text-sky-900 mb-3 uppercase border-b-2 border-sky-300 pb-1">
-            Education & Training
-          </h3>
-          {cvData.education.map((edu) => (
-            <div key={edu.id} className="mb-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="text-base font-bold text-gray-900">{edu.degree}</h4>
-                  <p className="text-sm text-gray-700">{edu.institution}, {edu.location}</p>
+          {/* Education Section */}
+          {cvData.education && cvData.education.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-sky-900 mb-3 uppercase border-b-4 border-sky-800 pb-2">
+                Education
+              </h3>
+              {cvData.education.map((edu) => (
+                <div key={edu.id} className="mb-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <h4 className="text-base font-bold text-gray-900">{edu.degree}</h4>
+                      <p className="text-sm text-sky-700 italic">{edu.institution}, {edu.location}</p>
+                    </div>
+                    {edu.graduationDate && (
+                      <p className="text-sm text-gray-600 font-semibold whitespace-nowrap ml-4">
+                        {edu.graduationDate}
+                      </p>
+                    )}
+                  </div>
                   {edu.description && (
-                    <p className="text-sm text-gray-600 mt-1">{edu.description}</p>
+                    <ul className="text-sm text-gray-700 ml-4">
+                      <li className="list-disc">{edu.description}</li>
+                    </ul>
                   )}
                 </div>
-                {edu.graduationDate && (
-                  <p className="text-sm text-gray-600 font-semibold">{edu.graduationDate}</p>
-                )}
+              ))}
+            </div>
+          )}
+
+          {/* Employment / Sea Service Section */}
+          {cvData.experience && cvData.experience.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-sky-900 mb-3 uppercase border-b-4 border-sky-800 pb-2">
+                Employment
+              </h3>
+              {cvData.experience.map((exp) => (
+                <div key={exp.id} className="mb-5">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <h4 className="text-base font-bold text-gray-900">{exp.position}</h4>
+                      <p className="text-sm text-sky-700 italic">{exp.employer}, {exp.location}</p>
+                    </div>
+                    <p className="text-sm text-gray-600 font-semibold whitespace-nowrap ml-4">
+                      {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+                    </p>
+                  </div>
+                  {exp.description && exp.description.length > 0 && (
+                    <ul className="text-sm text-gray-800 ml-4 space-y-1">
+                      {exp.description.map((item, idx) => (
+                        item && <li key={idx} className="list-disc leading-relaxed">{item}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Certificates Section */}
+          {cvData.certificates && cvData.certificates.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-sky-900 mb-3 uppercase border-b-4 border-sky-800 pb-2">
+                Certificates & Licenses
+              </h3>
+              <div className="space-y-2">
+                {cvData.certificates.map((cert) => (
+                  <div key={cert.id} className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-gray-900">{cert.name}</p>
+                      <p className="text-xs text-gray-600">{cert.issuer}</p>
+                    </div>
+                    <div className="text-right ml-4">
+                      <p className="text-xs text-gray-600">{cert.date}</p>
+                      {cert.validity && <p className="text-xs text-gray-500">Valid: {cert.validity}</p>}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
+          )}
         </div>
-      )}
-
-      {/* Certificates */}
-      {cvData.certificates && cvData.certificates.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-xl font-bold text-sky-900 mb-3 uppercase border-b-2 border-sky-300 pb-1">
-            Certificates & Licenses
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
-            {cvData.certificates.map((cert) => (
-              <div key={cert.id} className="text-sm">
-                <p className="font-semibold text-gray-900">{cert.name}</p>
-                <p className="text-gray-600">{cert.issuer} - {cert.date}</p>
-                {cert.validity && <p className="text-gray-500 text-xs">Valid: {cert.validity}</p>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Skills */}
-      {cvData.skills && cvData.skills.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-xl font-bold text-sky-900 mb-3 uppercase border-b-2 border-sky-300 pb-1">
-            Professional Skills
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
-            {cvData.skills.map((skill, idx) => (
-              <div key={idx} className="text-sm text-gray-700">
-                • {skill.name}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Languages */}
-      {cvData.languages && cvData.languages.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-xl font-bold text-sky-900 mb-3 uppercase border-b-2 border-sky-300 pb-1">
-            Languages
-          </h3>
-          <div className="flex space-x-6 text-sm">
-            {cvData.languages.map((lang, idx) => (
-              <div key={idx}>
-                <span className="font-semibold text-gray-900">{lang.name}:</span>
-                <span className="text-gray-700 ml-1">{lang.level}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="mt-8 pt-4 border-t border-gray-300 text-center text-xs text-gray-500">
-        <p>CV created with CV Build for Seaman</p>
       </div>
     </div>
   );
