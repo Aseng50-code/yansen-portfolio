@@ -5,7 +5,7 @@ import { Toaster } from "./components/ui/toaster";
 import { AuthProvider } from "./contexts/AuthContext";
 import Navbar from "./components/Navbar";
 import LandingPage from "./components/LandingPage";
-import CVBuilder from "./components/CVBuilder";
+import CVBuilderPro from "./components/CVBuilderPro";
 import Templates from "./components/Templates";
 import Pricing from "./components/Pricing";
 import FAQ from "./components/FAQ";
@@ -21,7 +21,7 @@ function App() {
           <Navbar />
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/builder" element={<CVBuilder />} />
+            <Route path="/builder" element={<CVBuilderPro />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/faq" element={<FAQ />} />
