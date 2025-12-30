@@ -9,7 +9,7 @@ import os
 import logging
 
 from models import (
-    UserCreate, UserLogin, User, UserResponse, Token, VerifyEmail,
+    UserCreate, UserLogin, User, UserResponse, Token, VerifyEmail, ChangePassword,
     JobCreate, Job, CommentCreate, JobComment,
     PaymentCreate, Payment, PaymentReject,
     Settings, PaymentInfo
@@ -19,6 +19,11 @@ from auth_utils import (
     generate_verification_token
 )
 from middleware import get_current_user, require_admin
+from security import (
+    sanitize_string, sanitize_dict, validate_email, validate_password,
+    validate_object_id, check_resource_ownership, sanitize_mongo_query,
+    validate_input_length
+)
 
 # Setup
 ROOT_DIR = Path(__file__).parent
