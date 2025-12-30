@@ -2,6 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* React Quill Editor Styles */
+.ql-container {
+  min-height: 150px;
+  font-size: 14px;
+}
+
+.ql-editor {
+  min-height: 150px;
+}
+
+.ql-toolbar {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  background: #f9fafb;
+}
+
+.ql-container {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
 body {
     margin: 0;
     font-family:
