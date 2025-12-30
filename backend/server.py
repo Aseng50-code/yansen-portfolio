@@ -59,16 +59,28 @@ logger = logging.getLogger(__name__)
 @api_router.post("/auth/register")
 async def register(user_data: UserCreate):
     """Register a new user"""
+    # Security: Validate and sanitize input
+    if not validate_email(user_data.email):
+        raise HTTPException(status_code=400, detail="Invalid email format")
+    
+    is_valid, error_msg = validate_password(user_data.password)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+    
+    # Sanitize inputs to prevent XSS
+    email = sanitize_string(user_data.email.lower())
+    full_name = sanitize_string(user_data.fullName)
+    
     # Check if user exists
-    existing_user = await db.users.find_one({"email": user_data.email})
+    existing_user = await db.users.find_one({"email": email})
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
     # Create user
     verification_token = generate_verification_token()
     user = User(
-        email=user_data.email,
-        fullName=user_data.fullName,
+        email=email,
+        fullName=full_name,
         verificationToken=verification_token
     )
     
