@@ -1183,10 +1183,12 @@ const CVBuilderPro = () => {
 
           {/* Live Preview */}
           <div className="lg:sticky lg:top-24 h-fit">
-            <Card className="p-8 bg-white shadow-2xl border-2 border-sky-200">
-              <h3 className="text-xl font-bold text-sky-950 mb-4">Live Preview</h3>
-              <div className="border-2 border-gray-200 rounded-lg overflow-hidden bg-white" style={{ transform: 'scale(0.6)', transformOrigin: 'top left', width: '166.67%', height: '600px' }}>
-                <CVPreviewContent />
+            <Card className="p-4 bg-white shadow-2xl border-2 border-sky-200">
+              <h3 className="text-xl font-bold text-sky-950 mb-4">Live Preview (A4)</h3>
+              <div className="overflow-hidden bg-gray-100 rounded-lg" style={{ height: '550px', overflowY: 'auto' }}>
+                <div className="transform scale-[0.35] origin-top-left" style={{ width: '285.7%' }}>
+                  <A4CVPreview cvData={cvData} profilePhoto={profilePhoto} />
+                </div>
               </div>
             </Card>
           </div>
