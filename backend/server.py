@@ -131,7 +131,13 @@ async def verify_email(verify_data: VerifyEmail):
 @api_router.post("/auth/login", response_model=Token)
 async def login(login_data: UserLogin):
     """Login user"""
-    user = await db.users.find_one({"email": login_data.email})
+    # Security: Validate and sanitize input
+    if not validate_email(login_data.email):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    email = sanitize_string(login_data.email.lower())
+    
+    user = await db.users.find_one({"email": email})
     
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
