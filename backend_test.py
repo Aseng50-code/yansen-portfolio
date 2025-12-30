@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Backend API Testing for CV Build for SEAMAN Application
-Testing Payment API and CV Download flow
+Testing Maritime Job Openings (Announcements) API and Payment/CV Download flow
 """
 
 import requests
