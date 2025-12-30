@@ -457,9 +457,9 @@ async def create_announcement(
     # Get admin user details
     admin = await db.users.find_one({"id": current_user["userId"]})
     
-    # Sanitize inputs
+    # Sanitize inputs - use sanitize_html for body to preserve rich text formatting
     title = sanitize_string(announcement_data.title)
-    body = sanitize_string(announcement_data.body)
+    body = sanitize_html(announcement_data.body)  # Allow safe HTML tags
     contact_info = sanitize_string(announcement_data.contactInfo) if announcement_data.contactInfo else None
     tags = [sanitize_string(t) for t in announcement_data.tags]
     
