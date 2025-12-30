@@ -169,6 +169,10 @@ async def get_me(authorization: Optional[str] = Header(None)):
 async def get_jobs():
     """Get all jobs (public)"""
     jobs = await db.jobs.find().sort("postedDate", -1).to_list(1000)
+    # Remove MongoDB _id field
+    for job in jobs:
+        if "_id" in job:
+            del job["_id"]
     return {"jobs": jobs}
 
 @api_router.post("/jobs")
