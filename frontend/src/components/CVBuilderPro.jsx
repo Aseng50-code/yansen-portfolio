@@ -579,11 +579,15 @@ const CVBuilderPro = () => {
                   Preview CV
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-[900px] max-h-[95vh] overflow-y-auto p-6">
                 <DialogHeader>
-                  <DialogTitle className="text-2xl font-bold text-sky-900">CV Preview</DialogTitle>
+                  <DialogTitle className="text-2xl font-bold text-sky-900">CV Preview (A4 Format)</DialogTitle>
                 </DialogHeader>
-                <CVPreviewContent />
+                <div className="mt-4 flex justify-center">
+                  <div className="transform scale-[0.6] origin-top">
+                    <A4CVPreview cvData={cvData} profilePhoto={profilePhoto} />
+                  </div>
+                </div>
                 <div className="flex justify-end space-x-3 mt-4 pt-4 border-t">
                   <Button variant="outline" onClick={() => setShowPreview(false)}>
                     Close Preview
