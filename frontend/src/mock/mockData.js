@@ -143,6 +143,8 @@ export const sampleCV = {
     email: 'james.anderson@maritime.com',
     phone: '+1 (555) 789-0123',
     location: 'Miami, Florida, USA',
+    nationality: 'American',
+    dateOfBirth: 'January 15, 1985',
     title: 'Master Mariner (Chief Officer)',
     summary: 'Experienced Master Mariner with over 12 years of sea service on various vessel types including Container Ships, Bulk Carriers, and Tankers. Hold unlimited Master Certificate and possess excellent navigation, cargo operations, and crew management skills. Strong safety record and commitment to environmental protection. Seeking Chief Officer position with reputable shipping company.'
   },
@@ -198,6 +200,36 @@ export const sampleCV = {
       location: 'Houston, TX',
       graduationDate: 'June 2014',
       description: 'STCW II/1 OOW Certification'
+    }
+  ],
+  certificates: [
+    {
+      id: 1,
+      name: 'STCW Basic Safety Training',
+      issuer: 'IMO',
+      date: '2014',
+      validity: 'Lifetime'
+    },
+    {
+      id: 2,
+      name: 'Advanced Fire Fighting',
+      issuer: 'IMO',
+      date: '2015',
+      validity: '5 Years'
+    },
+    {
+      id: 3,
+      name: 'Medical First Aid',
+      issuer: 'IMO',
+      date: '2015',
+      validity: '5 Years'
+    },
+    {
+      id: 4,
+      name: 'ECDIS Generic',
+      issuer: 'Approved Training Center',
+      date: '2016',
+      validity: 'Lifetime'
     }
   ],
   skills: [
