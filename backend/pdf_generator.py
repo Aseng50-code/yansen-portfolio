@@ -1,126 +1,17 @@
 """
 CV PDF Generator for CV Build for SEAMAN
-Generates professional maritime CV PDFs using ReportLab - Matching Web Preview Design
+Uses HTML/CSS to PDF conversion for pixel-perfect match with web preview
 """
 
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import mm
-from reportlab.lib.colors import HexColor, white
-from reportlab.pdfgen import canvas
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+from weasyprint import HTML, CSS
+from weasyprint.text.fonts import FontConfiguration
 from io import BytesIO
 import base64
-import os
 
 
-# Color scheme matching the frontend
-SIDEBAR_TOP = HexColor('#0C4A6E')  # sky-800
-SIDEBAR_BOTTOM = HexColor('#075985')  # sky-900
-TEXT_COLOR = HexColor('#1f2937')  # gray-800
-LIGHT_TEXT = HexColor('#6b7280')  # gray-500
-DOT_FILLED = HexColor('#0369A1')  # sky-700
-DOT_EMPTY = HexColor('#D1D5DB')  # gray-300
-HEADING_COLOR = HexColor('#0C4A6E')  # sky-800
-
-
-def draw_gradient_rect(c, x, y, w, h, color1, color2, steps=50):
-    """Draw a vertical gradient rectangle"""
-    step_h = h / steps
-    for i in range(steps):
-        # Interpolate between colors
-        ratio = i / steps
-        r = color1.red + (color2.red - color1.red) * ratio
-        g = color1.green + (color2.green - color1.green) * ratio
-        b = color1.blue + (color2.blue - color1.blue) * ratio
-        c.setFillColorRGB(r, g, b)
-        c.rect(x, y + h - (i + 1) * step_h, w, step_h + 0.5, fill=True, stroke=False)
-
-
-def draw_circular_photo(c, image_data, center_x, center_y, radius):
-    """Draw a circular photo with white border"""
-    try:
-        if ',' in image_data:
-            photo_data = base64.b64decode(image_data.split(',')[1])
-        else:
-            photo_data = base64.b64decode(image_data)
-        
-        from PIL import Image as PILImage, ImageDraw
-        from io import BytesIO as ImgBuffer
-        from reportlab.lib.utils import ImageReader
-        
-        img_buffer = ImgBuffer(photo_data)
-        img = PILImage.open(img_buffer)
-        
-        # Create circular mask
-        size = (int(radius * 2 * 4), int(radius * 2 * 4))  # High res for quality
-        mask = PILImage.new('L', size, 0)
-        draw = ImageDraw.Draw(mask)
-        draw.ellipse((0, 0, size[0], size[1]), fill=255)
-        
-        # Resize and crop to square
-        img = img.convert('RGBA')
-        min_dim = min(img.size)
-        left = (img.size[0] - min_dim) // 2
-        top = (img.size[1] - min_dim) // 2
-        img = img.crop((left, top, left + min_dim, top + min_dim))
-        img = img.resize(size, PILImage.Resampling.LANCZOS)
-        
-        # Apply mask
-        output = PILImage.new('RGBA', size, (255, 255, 255, 0))
-        output.paste(img, (0, 0))
-        output.putalpha(mask)
-        
-        output_buffer = ImgBuffer()
-        output.save(output_buffer, format='PNG')
-        output_buffer.seek(0)
-        
-        # Draw white circle border
-        c.setStrokeColor(white)
-        c.setLineWidth(6)
-        c.circle(center_x, center_y, radius + 3, fill=False, stroke=True)
-        
-        # Draw the image
-        img_reader = ImageReader(output_buffer)
-        c.drawImage(img_reader, center_x - radius, center_y - radius, 
-                   width=radius * 2, height=radius * 2, mask='auto')
-        return True
-    except Exception as e:
-        print(f"Photo error: {e}")
-        return False
-
-
-def draw_text_icon(c, symbol, x, y, size=10):
-    """Draw a text-based icon symbol"""
-    c.setFont("Helvetica", size)
-    c.drawString(x, y, symbol)
-
-
-def draw_skill_dots(c, x, y, level, max_level=5):
-    """Draw skill rating dots"""
-    dot_size = 3.5 * mm
-    spacing = 1.5 * mm
-    for i in range(max_level):
-        if i < level:
-            c.setFillColor(DOT_FILLED)
-        else:
-            c.setFillColor(DOT_EMPTY)
-        c.circle(x + i * (dot_size + spacing) + dot_size/2, y, dot_size/2, fill=True, stroke=False)
-
-
-def generate_cv_pdf(cv_data: dict, profile_photo: str = None) -> BytesIO:
-    """Generate a professional CV PDF matching the web preview design"""
-    buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
+def get_cv_html(cv_data: dict, profile_photo: str = None) -> str:
+    """Generate HTML that matches the CV preview exactly"""
     
-    # Layout
-    sidebar_width = 74 * mm
-    content_x = sidebar_width + 8 * mm
-    content_width = width - content_x - 12 * mm
-    margin = 8 * mm
-    
-    # Data extraction
     personal = cv_data.get('personalInfo', {})
     experience = cv_data.get('experience', [])
     education = cv_data.get('education', [])
@@ -128,343 +19,579 @@ def generate_cv_pdf(cv_data: dict, profile_photo: str = None) -> BytesIO:
     skills = cv_data.get('skills', [])
     languages = cv_data.get('languages', [])
     
-    # ==================== LEFT SIDEBAR ====================
-    # Calculate blue section height based on content
-    blue_height = 175 * mm
+    # Build personal details items
+    personal_details_html = ""
     
-    # Draw gradient sidebar (from sky-800 to sky-900)
-    draw_gradient_rect(c, 0, height - blue_height, sidebar_width, blue_height, SIDEBAR_TOP, SIDEBAR_BOTTOM)
+    # Name with person icon
+    if personal.get('fullName'):
+        personal_details_html += f'''
+        <div class="detail-item">
+            <div class="icon-wrapper">
+                <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <span>{personal.get('fullName')}</span>
+        </div>'''
     
-    y = height - 18 * mm
+    # Email
+    if personal.get('email'):
+        personal_details_html += f'''
+        <div class="detail-item">
+            <div class="icon-wrapper">
+                <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+            </div>
+            <span>{personal.get('email')}</span>
+        </div>'''
     
-    # === NAME ===
-    c.setFillColor(white)
-    c.setFont("Helvetica-Bold", 18)
-    name = personal.get('fullName', 'Your Name')
+    # Phone
+    if personal.get('phone'):
+        personal_details_html += f'''
+        <div class="detail-item">
+            <div class="icon-wrapper">
+                <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                </svg>
+            </div>
+            <span>{personal.get('phone')}</span>
+        </div>'''
     
-    # Word wrap name
-    max_name_width = sidebar_width - 16*mm
-    if c.stringWidth(name, "Helvetica-Bold", 18) > max_name_width:
-        words = name.split()
-        line1 = ""
-        line2 = ""
-        for word in words:
-            test = line1 + " " + word if line1 else word
-            if c.stringWidth(test, "Helvetica-Bold", 18) <= max_name_width:
-                line1 = test
-            else:
-                line2 += " " + word if line2 else word
-        c.drawCentredString(sidebar_width/2, y, line1)
-        if line2:
-            y -= 6*mm
-            c.drawCentredString(sidebar_width/2, y, line2)
-    else:
-        c.drawCentredString(sidebar_width/2, y, name)
+    # Location
+    if personal.get('location'):
+        personal_details_html += f'''
+        <div class="detail-item">
+            <div class="icon-wrapper">
+                <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <span>{personal.get('location')}</span>
+        </div>'''
     
-    # Underline
-    y -= 5*mm
-    c.setStrokeColor(white)
-    c.setLineWidth(2)
-    c.line(sidebar_width/2 - 30*mm, y, sidebar_width/2 + 30*mm, y)
+    # Nationality
+    if personal.get('nationality'):
+        personal_details_html += f'''
+        <div class="detail-item">
+            <div class="icon-wrapper">
+                <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <span>{personal.get('nationality')}</span>
+        </div>'''
     
-    # === TITLE ===
-    y -= 6*mm
-    c.setFont("Helvetica-Bold", 11)
-    title = personal.get('title', 'Professional Title')
+    # Date of Birth
+    if personal.get('dateOfBirth'):
+        personal_details_html += f'''
+        <div class="detail-item">
+            <div class="icon-wrapper">
+                <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <span>{personal.get('dateOfBirth')}</span>
+        </div>'''
     
-    # Word wrap title
-    if c.stringWidth(title, "Helvetica-Bold", 11) > max_name_width:
-        words = title.split()
-        line = ""
-        for word in words:
-            test = line + " " + word if line else word
-            if c.stringWidth(test, "Helvetica-Bold", 11) <= max_name_width:
-                line = test
-            else:
-                c.drawCentredString(sidebar_width/2, y, line)
-                y -= 5*mm
-                line = word
-        if line:
-            c.drawCentredString(sidebar_width/2, y, line)
-    else:
-        c.drawCentredString(sidebar_width/2, y, title)
-    
-    # === PHOTO ===
-    y -= 10*mm
-    photo_radius = 24*mm
-    photo_x = sidebar_width/2
-    photo_y = y - photo_radius
-    
-    photo_drawn = False
-    if profile_photo:
-        photo_drawn = draw_circular_photo(c, profile_photo, photo_x, photo_y, photo_radius)
-    
-    if not photo_drawn:
-        # Placeholder circle
-        c.setFillColor(HexColor('#0A3D5C'))
-        c.setStrokeColor(white)
-        c.setLineWidth(6)
-        c.circle(photo_x, photo_y, photo_radius, fill=True, stroke=True)
-        c.setFillColor(white)
-        c.setFont("Helvetica", 10)
-        c.drawCentredString(photo_x, photo_y, "Upload Photo")
-    
-    y = photo_y - photo_radius - 12*mm
-    
-    # === PERSONAL DETAILS ===
-    c.setFillColor(white)
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(margin, y, "PERSONAL DETAILS")
-    y -= 3*mm
-    c.setLineWidth(1.5)
-    c.line(margin, y, sidebar_width - margin, y)
-    y -= 10*mm
-    
-    # Personal details with simple text symbols
-    c.setFont("Helvetica", 9)
-    icon_col = margin
-    text_col = margin + 8*mm
-    line_height = 6.5*mm
-    
-    details = [
-        ('●', personal.get('fullName', '')),
-        ('✉', personal.get('email', '')),
-        ('☎', personal.get('phone', '')),
-        ('⌂', personal.get('location', '')),
-        ('⚑', personal.get('nationality', '')),
-        ('◉', personal.get('dateOfBirth', '')),
-    ]
-    
-    # Social media
+    # Social Media - LinkedIn
     if personal.get('linkedin'):
-        details.append(('in', personal.get('linkedin')))
+        personal_details_html += f'''
+        <div class="detail-item">
+            <div class="icon-wrapper">
+                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+            </div>
+            <span class="social-text">{personal.get('linkedin')}</span>
+        </div>'''
+    
+    # Facebook
     if personal.get('facebook'):
-        details.append(('f', personal.get('facebook')))
+        personal_details_html += f'''
+        <div class="detail-item">
+            <div class="icon-wrapper">
+                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+            </div>
+            <span class="social-text">{personal.get('facebook')}</span>
+        </div>'''
+    
+    # Instagram
     if personal.get('instagram'):
-        details.append(('📷', personal.get('instagram')))
+        personal_details_html += f'''
+        <div class="detail-item">
+            <div class="icon-wrapper">
+                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+            </div>
+            <span class="social-text">{personal.get('instagram')}</span>
+        </div>'''
+    
+    # Twitter/X
     if personal.get('twitter'):
-        details.append(('𝕏', personal.get('twitter')))
+        personal_details_html += f'''
+        <div class="detail-item">
+            <div class="icon-wrapper">
+                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+            </div>
+            <span class="social-text">{personal.get('twitter')}</span>
+        </div>'''
+    
+    # YouTube
     if personal.get('youtube'):
-        details.append(('▶', personal.get('youtube')))
+        personal_details_html += f'''
+        <div class="detail-item">
+            <div class="icon-wrapper">
+                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+            </div>
+            <span class="social-text">{personal.get('youtube')}</span>
+        </div>'''
     
-    for symbol, value in details:
-        if value:
-            # Draw symbol
-            c.setFont("Helvetica-Bold", 9)
-            c.drawString(icon_col, y, symbol)
-            
-            # Draw value with word wrap
-            c.setFont("Helvetica", 9)
-            max_text_width = sidebar_width - text_col - margin
-            
-            if c.stringWidth(value, "Helvetica", 9) > max_text_width:
-                # Wrap long text
-                words = value.split()
-                line = ""
-                for word in words:
-                    test = line + " " + word if line else word
-                    if c.stringWidth(test, "Helvetica", 9) <= max_text_width:
-                        line = test
-                    else:
-                        c.drawString(text_col, y, line)
-                        y -= 4*mm
-                        line = word
-                if line:
-                    c.drawString(text_col, y, line)
+    # Build skills HTML
+    skills_html = ""
+    for skill in skills[:8]:
+        dots = ""
+        level = skill.get('level', 3)
+        for i in range(5):
+            if i < level:
+                dots += '<div class="skill-dot filled"></div>'
             else:
-                c.drawString(text_col, y, value)
-            
-            y -= line_height
+                dots += '<div class="skill-dot empty"></div>'
+        skills_html += f'''
+        <div class="skill-item">
+            <div class="skill-name">{skill.get('name', '')}</div>
+            <div class="skill-dots">{dots}</div>
+        </div>'''
     
-    # ==================== WHITE SECTION (Skills & Languages) ====================
-    white_top = y + 5*mm
-    c.setFillColor(white)
-    c.rect(0, 0, sidebar_width, white_top, fill=True, stroke=False)
+    # Build languages HTML
+    languages_html = ""
+    for lang in languages[:5]:
+        languages_html += f'''
+        <div class="language-item">
+            <span class="lang-name">{lang.get('name', '')}</span>
+            <span class="lang-level">{lang.get('level', '')}</span>
+        </div>'''
     
-    y -= 8*mm
+    # Build education HTML
+    education_html = ""
+    for edu in education[:3]:
+        desc_html = f'<div class="item-description">• {edu.get("description", "")}</div>' if edu.get('description') else ''
+        education_html += f'''
+        <div class="content-item">
+            <div class="item-header">
+                <div class="item-title">{edu.get('degree', '')}</div>
+                <div class="item-date">{edu.get('graduationDate', '')}</div>
+            </div>
+            <div class="item-subtitle">{edu.get('institution', '')}, {edu.get('location', '')}</div>
+            {desc_html}
+        </div>'''
     
-    # === SKILLS ===
-    if skills:
-        c.setFillColor(HEADING_COLOR)
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(margin, y, "SKILLS")
-        y -= 3*mm
-        c.setStrokeColor(HEADING_COLOR)
-        c.setLineWidth(1.5)
-        c.line(margin, y, sidebar_width - margin, y)
-        y -= 10*mm
+    # Build experience HTML
+    experience_html = ""
+    for exp in experience[:3]:
+        end_date = 'Present' if exp.get('current') else exp.get('endDate', '')
+        descriptions = exp.get('description', [])
+        desc_html = ""
+        if isinstance(descriptions, list):
+            for desc in descriptions[:4]:
+                if desc:
+                    desc_html += f'<div class="item-description">• {desc}</div>'
+        experience_html += f'''
+        <div class="content-item">
+            <div class="item-header">
+                <div class="item-title">{exp.get('position', '')}</div>
+                <div class="item-date">{exp.get('startDate', '')} - {end_date}</div>
+            </div>
+            <div class="item-subtitle">{exp.get('employer', '')}, {exp.get('location', '')}</div>
+            {desc_html}
+        </div>'''
+    
+    # Build certificates HTML
+    certificates_html = ""
+    for cert in certificates[:5]:
+        validity = f" | Valid: {cert.get('validity')}" if cert.get('validity') else ""
+        certificates_html += f'''
+        <div class="content-item cert-item">
+            <div class="item-header">
+                <div class="item-title cert-title">{cert.get('name', '')}</div>
+                <div class="item-date">{cert.get('date', '')}</div>
+            </div>
+            <div class="cert-issuer">{cert.get('issuer', '')}{validity}</div>
+        </div>'''
+    
+    # Photo HTML
+    if profile_photo:
+        photo_html = f'<img src="{profile_photo}" alt="Profile Photo" class="photo-img" />'
+    else:
+        photo_html = '<span class="photo-placeholder">Upload Photo</span>'
+    
+    # Complete HTML
+    html = f'''
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {{
+            size: A4;
+            margin: 0;
+        }}
         
-        c.setFont("Helvetica", 9)
-        for skill in skills[:8]:
-            c.setFillColor(TEXT_COLOR)
-            c.drawString(margin, y, skill.get('name', '')[:24])
-            y -= 5*mm
-            draw_skill_dots(c, margin, y + 1*mm, skill.get('level', 3))
-            y -= 7*mm
-    
-    # === LANGUAGES ===
-    if languages:
-        y -= 5*mm
-        c.setFillColor(HEADING_COLOR)
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(margin, y, "LANGUAGES")
-        y -= 3*mm
-        c.setStrokeColor(HEADING_COLOR)
-        c.line(margin, y, sidebar_width - margin, y)
-        y -= 8*mm
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
         
-        c.setFont("Helvetica", 9)
-        for lang in languages[:5]:
-            c.setFillColor(TEXT_COLOR)
-            lang_text = f"{lang.get('name', '')}: {lang.get('level', '')}"
-            c.drawString(margin, y, lang_text)
-            y -= 5.5*mm
-    
-    # ==================== RIGHT CONTENT AREA ====================
-    y = height - 20*mm
-    
-    # === PROFILE ===
-    summary = personal.get('summary', '')
-    if summary:
-        c.setFillColor(HEADING_COLOR)
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(content_x, y, "PROFILE")
-        y -= 4*mm
-        c.setStrokeColor(HEADING_COLOR)
-        c.setLineWidth(3)
-        c.line(content_x, y, content_x + 45*mm, y)
-        y -= 10*mm
+        body {{
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9pt;
+            line-height: 1.4;
+            color: #1f2937;
+            background: white;
+        }}
         
-        c.setFillColor(TEXT_COLOR)
-        c.setFont("Helvetica", 9)
+        .cv-container {{
+            width: 210mm;
+            min-height: 297mm;
+            display: flex;
+        }}
         
-        # Word wrap summary
-        words = summary.split()
-        line = ""
-        for word in words:
-            test = line + " " + word if line else word
-            if c.stringWidth(test, "Helvetica", 9) <= content_width:
-                line = test
-            else:
-                c.drawString(content_x, y, line)
-                y -= 4*mm
-                line = word
-        if line:
-            c.drawString(content_x, y, line)
-            y -= 4*mm
-    
-    # === EDUCATION ===
-    if education:
-        y -= 10*mm
-        c.setFillColor(HEADING_COLOR)
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(content_x, y, "EDUCATION")
-        y -= 4*mm
-        c.setStrokeColor(HEADING_COLOR)
-        c.setLineWidth(3)
-        c.line(content_x, y, content_x + 45*mm, y)
-        y -= 10*mm
+        /* Left Sidebar */
+        .sidebar {{
+            width: 35%;
+            background: linear-gradient(180deg, #0c4a6e 0%, #075985 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }}
         
-        for edu in education[:3]:
-            c.setFillColor(TEXT_COLOR)
-            c.setFont("Helvetica-Bold", 10)
-            c.drawString(content_x, y, edu.get('degree', '')[:50])
-            
-            grad_date = edu.get('graduationDate', '')
-            if grad_date:
-                c.setFont("Helvetica", 9)
-                c.drawRightString(width - 12*mm, y, grad_date)
-            
-            y -= 5*mm
-            c.setFillColor(HEADING_COLOR)
-            c.setFont("Helvetica-Oblique", 9)
-            inst = f"{edu.get('institution', '')}, {edu.get('location', '')}"
-            c.drawString(content_x, y, inst[:55])
-            
-            y -= 5*mm
-            desc = edu.get('description', '')
-            if desc:
-                c.setFillColor(TEXT_COLOR)
-                c.setFont("Helvetica", 8)
-                c.drawString(content_x + 3*mm, y, f"• {desc[:65]}")
-                y -= 4*mm
-            y -= 5*mm
-    
-    # === EMPLOYMENT ===
-    if experience:
-        y -= 5*mm
-        c.setFillColor(HEADING_COLOR)
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(content_x, y, "EMPLOYMENT")
-        y -= 4*mm
-        c.setStrokeColor(HEADING_COLOR)
-        c.setLineWidth(3)
-        c.line(content_x, y, content_x + 45*mm, y)
-        y -= 10*mm
+        .sidebar-blue {{
+            padding: 24pt 20pt;
+            flex-shrink: 0;
+        }}
         
-        for exp in experience[:3]:
-            if y < 40*mm:
-                break
-            c.setFillColor(TEXT_COLOR)
-            c.setFont("Helvetica-Bold", 10)
-            c.drawString(content_x, y, exp.get('position', '')[:45])
-            
-            date_range = f"{exp.get('startDate', '')} - {exp.get('endDate', 'Present') if not exp.get('current') else 'Present'}"
-            c.setFont("Helvetica", 9)
-            c.drawRightString(width - 12*mm, y, date_range)
-            
-            y -= 5*mm
-            c.setFillColor(HEADING_COLOR)
-            c.setFont("Helvetica-Oblique", 9)
-            company = f"{exp.get('employer', '')}, {exp.get('location', '')}"
-            c.drawString(content_x, y, company[:55])
-            
-            y -= 5*mm
-            descriptions = exp.get('description', [])
-            if isinstance(descriptions, list):
-                c.setFillColor(TEXT_COLOR)
-                c.setFont("Helvetica", 8)
-                for desc in descriptions[:4]:
-                    if desc and y > 35*mm:
-                        c.drawString(content_x + 3*mm, y, f"• {desc[:60]}")
-                        y -= 4*mm
-            y -= 5*mm
-    
-    # === CERTIFICATES ===
-    if certificates and y > 50*mm:
-        y -= 5*mm
-        c.setFillColor(HEADING_COLOR)
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(content_x, y, "CERTIFICATES & LICENSES")
-        y -= 4*mm
-        c.setStrokeColor(HEADING_COLOR)
-        c.setLineWidth(3)
-        c.line(content_x, y, content_x + 55*mm, y)
-        y -= 8*mm
+        .sidebar-white {{
+            background: white;
+            padding: 20pt;
+            flex-grow: 1;
+        }}
         
-        for cert in certificates[:5]:
-            if y < 25*mm:
-                break
-            c.setFillColor(TEXT_COLOR)
-            c.setFont("Helvetica-Bold", 9)
-            c.drawString(content_x, y, cert.get('name', '')[:45])
+        /* Header Section */
+        .name {{
+            font-size: 18pt;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 6pt;
+            line-height: 1.2;
+        }}
+        
+        .name-underline {{
+            width: 60pt;
+            height: 2pt;
+            background: white;
+            margin: 0 auto 8pt auto;
+        }}
+        
+        .title {{
+            font-size: 11pt;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 16pt;
+            line-height: 1.3;
+        }}
+        
+        /* Photo */
+        .photo-container {{
+            width: 110pt;
+            height: 110pt;
+            border-radius: 50%;
+            border: 5pt solid white;
+            margin: 0 auto 16pt auto;
+            overflow: hidden;
+            background: #0a3d5c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }}
+        
+        .photo-img {{
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }}
+        
+        .photo-placeholder {{
+            font-size: 9pt;
+            color: white;
+            text-align: center;
+        }}
+        
+        /* Section Headers */
+        .section-header {{
+            font-size: 11pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 6pt;
+            padding-bottom: 4pt;
+            border-bottom: 1.5pt solid white;
+        }}
+        
+        .section-header-dark {{
+            color: #0c4a6e;
+            border-bottom-color: #0c4a6e;
+            margin-bottom: 10pt;
+        }}
+        
+        /* Personal Details */
+        .detail-item {{
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 6pt;
+            gap: 8pt;
+        }}
+        
+        .icon-wrapper {{
+            width: 14pt;
+            height: 14pt;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }}
+        
+        .icon {{
+            width: 12pt;
+            height: 12pt;
+        }}
+        
+        .detail-item span {{
+            flex: 1;
+            word-break: break-word;
+            font-size: 9pt;
+            line-height: 1.4;
+        }}
+        
+        .social-text {{
+            font-size: 8pt !important;
+        }}
+        
+        /* Skills */
+        .skill-item {{
+            margin-bottom: 8pt;
+        }}
+        
+        .skill-name {{
+            font-size: 9pt;
+            font-weight: 500;
+            color: #1f2937;
+            margin-bottom: 3pt;
+        }}
+        
+        .skill-dots {{
+            display: flex;
+            gap: 3pt;
+        }}
+        
+        .skill-dot {{
+            width: 10pt;
+            height: 10pt;
+            border-radius: 50%;
+        }}
+        
+        .skill-dot.filled {{
+            background: #0369a1;
+        }}
+        
+        .skill-dot.empty {{
+            background: #d1d5db;
+        }}
+        
+        /* Languages */
+        .language-item {{
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4pt;
+        }}
+        
+        .lang-name {{
+            font-weight: 600;
+            color: #1f2937;
+        }}
+        
+        .lang-level {{
+            color: #6b7280;
+        }}
+        
+        /* Right Content */
+        .main-content {{
+            width: 65%;
+            padding: 24pt;
+            background: white;
+            border-left: 2pt solid #e5e7eb;
+        }}
+        
+        .content-section {{
+            margin-bottom: 16pt;
+        }}
+        
+        .content-header {{
+            font-size: 13pt;
+            font-weight: bold;
+            color: #0c4a6e;
+            text-transform: uppercase;
+            margin-bottom: 4pt;
+            padding-bottom: 4pt;
+            border-bottom: 3pt solid #0c4a6e;
+        }}
+        
+        .profile-text {{
+            font-size: 9pt;
+            line-height: 1.5;
+            text-align: justify;
+            color: #1f2937;
+            margin-top: 8pt;
+        }}
+        
+        /* Content Items */
+        .content-item {{
+            margin-top: 10pt;
+        }}
+        
+        .item-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }}
+        
+        .item-title {{
+            font-size: 10pt;
+            font-weight: bold;
+            color: #1f2937;
+        }}
+        
+        .item-date {{
+            font-size: 9pt;
+            color: #6b7280;
+            flex-shrink: 0;
+            margin-left: 8pt;
+        }}
+        
+        .item-subtitle {{
+            font-size: 9pt;
+            font-style: italic;
+            color: #075985;
+            margin-top: 2pt;
+        }}
+        
+        .item-description {{
+            font-size: 8pt;
+            color: #1f2937;
+            margin-top: 2pt;
+            padding-left: 8pt;
+        }}
+        
+        .cert-item {{
+            margin-top: 6pt;
+        }}
+        
+        .cert-title {{
+            font-size: 9pt;
+        }}
+        
+        .cert-issuer {{
+            font-size: 8pt;
+            color: #6b7280;
+            margin-top: 1pt;
+        }}
+        
+        @media print {{
+            body {{
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="cv-container">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-blue">
+                <div class="name">{personal.get('fullName', 'Your Name')}</div>
+                <div class="name-underline"></div>
+                <div class="title">{personal.get('title', 'Professional Title')}</div>
+                
+                <div class="photo-container">
+                    {photo_html}
+                </div>
+                
+                <div class="section-header">Personal Details</div>
+                {personal_details_html}
+            </div>
             
-            cert_date = cert.get('date', '')
-            if cert_date:
-                c.setFont("Helvetica", 8)
-                c.drawRightString(width - 12*mm, y, cert_date)
+            <div class="sidebar-white">
+                {f'<div class="section-header section-header-dark">Skills</div>{skills_html}' if skills else ''}
+                {f'<div class="section-header section-header-dark" style="margin-top: 16pt;">Languages</div>{languages_html}' if languages else ''}
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            {f'''<div class="content-section">
+                <div class="content-header">Profile</div>
+                <div class="profile-text">{personal.get('summary', '')}</div>
+            </div>''' if personal.get('summary') else ''}
             
-            y -= 4*mm
-            c.setFillColor(LIGHT_TEXT)
-            c.setFont("Helvetica", 8)
-            issuer = cert.get('issuer', '')
-            validity = cert.get('validity', '')
-            info = f"{issuer}"
-            if validity:
-                info += f" | Valid: {validity}"
-            c.drawString(content_x, y, info[:55])
-            y -= 6*mm
+            {f'''<div class="content-section">
+                <div class="content-header">Education</div>
+                {education_html}
+            </div>''' if education else ''}
+            
+            {f'''<div class="content-section">
+                <div class="content-header">Employment</div>
+                {experience_html}
+            </div>''' if experience else ''}
+            
+            {f'''<div class="content-section">
+                <div class="content-header">Certificates & Licenses</div>
+                {certificates_html}
+            </div>''' if certificates else ''}
+        </div>
+    </div>
+</body>
+</html>
+'''
+    return html
+
+
+def generate_cv_pdf(cv_data: dict, profile_photo: str = None) -> BytesIO:
+    """Generate a professional CV PDF using HTML/CSS conversion"""
     
-    c.save()
+    # Get profile photo from cv_data if not provided separately
+    if not profile_photo:
+        profile_photo = cv_data.get('profilePhoto')
+    
+    # Generate HTML
+    html_content = get_cv_html(cv_data, profile_photo)
+    
+    # Configure fonts
+    font_config = FontConfiguration()
+    
+    # Convert HTML to PDF
+    html = HTML(string=html_content)
+    
+    # Generate PDF to buffer
+    buffer = BytesIO()
+    html.write_pdf(buffer, font_config=font_config)
     buffer.seek(0)
+    
     return buffer
