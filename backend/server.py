@@ -390,8 +390,20 @@ async def create_payment(
     payment_data: PaymentCreate,
     authorization: Optional[str] = Header(None)
 ):
-    """Create a payment record"""
+    """Create a payment record with proof"""
     current_user = get_current_user(authorization)
+    
+    # Check for existing pending payment
+    existing_payment = await db.payments.find_one({
+        "userId": current_user["userId"],
+        "status": "pending"
+    })
+    
+    if existing_payment:
+        raise HTTPException(
+            status_code=400, 
+            detail="You already have a pending payment. Please wait for verification or contact admin."
+        )
     
     payment = Payment(
         userId=current_user["userId"],
@@ -405,9 +417,69 @@ async def create_payment(
     payment_info = settings.get("paymentInfo") if settings else PaymentInfo().dict()
     
     return {
-        "message": "Payment record created. Please complete the payment.",
-        "payment": payment,
+        "message": "Payment submitted successfully. Please wait for admin verification.",
+        "payment": {
+            "id": payment.id,
+            "status": payment.status,
+            "amount": payment.amount,
+            "createdAt": payment.createdAt.isoformat()
+        },
         "paymentInfo": payment_info
+    }
+
+@api_router.get("/payments/my-payments")
+async def get_my_payments(authorization: Optional[str] = Header(None)):
+    """Get current user's payment history"""
+    current_user = get_current_user(authorization)
+    
+    payments = await db.payments.find(
+        {"userId": current_user["userId"]},
+        {"_id": 0, "paymentProof": 0}  # Exclude _id and large proof data
+    ).sort("createdAt", -1).to_list(100)
+    
+    return {"payments": payments}
+
+@api_router.get("/payments/check-status")
+async def check_payment_status(authorization: Optional[str] = Header(None)):
+    """Check if user has a confirmed payment (can download CV)"""
+    current_user = get_current_user(authorization)
+    
+    # Find the most recent confirmed payment
+    confirmed_payment = await db.payments.find_one({
+        "userId": current_user["userId"],
+        "status": "confirmed"
+    }, sort=[("confirmedAt", -1)])
+    
+    if confirmed_payment:
+        return {
+            "canDownload": True,
+            "payment": {
+                "id": confirmed_payment["id"],
+                "status": "confirmed",
+                "confirmedAt": confirmed_payment.get("confirmedAt")
+            }
+        }
+    
+    # Check for pending payment
+    pending_payment = await db.payments.find_one({
+        "userId": current_user["userId"],
+        "status": "pending"
+    })
+    
+    if pending_payment:
+        return {
+            "canDownload": False,
+            "payment": {
+                "id": pending_payment["id"],
+                "status": "pending",
+                "message": "Your payment is being verified. Please wait."
+            }
+        }
+    
+    return {
+        "canDownload": False,
+        "payment": None,
+        "message": "No payment found. Please complete payment to download your CV."
     }
 
 @api_router.get("/payments")
