@@ -76,14 +76,17 @@ class PaymentBase(BaseModel):
 
 class PaymentCreate(PaymentBase):
     cvId: Optional[str] = None
+    paymentProof: Optional[str] = None  # Base64 encoded image of payment proof
 
 class Payment(PaymentBase):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     userId: str
     status: str = "pending"  # "pending", "confirmed", "rejected"
+    paymentProof: Optional[str] = None  # Base64 encoded image
     rejectionReason: Optional[str] = None
     createdAt: datetime = Field(default_factory=datetime.utcnow)
     confirmedAt: Optional[datetime] = None
+    cvData: Optional[dict] = None  # Store CV data for PDF generation
     
     class Config:
         json_encoders = {datetime: lambda v: v.isoformat()}
