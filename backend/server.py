@@ -500,7 +500,7 @@ async def update_announcement(
     
     update_data = {
         "title": sanitize_string(announcement_data.title),
-        "body": sanitize_string(announcement_data.body),
+        "body": sanitize_html(announcement_data.body),  # Allow safe HTML tags
         "coverImage": announcement_data.coverImage,
         "positions": [p.dict() for p in announcement_data.positions],
         "contactInfo": sanitize_string(announcement_data.contactInfo) if announcement_data.contactInfo else None,
