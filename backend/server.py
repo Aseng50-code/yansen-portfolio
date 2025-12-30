@@ -345,6 +345,20 @@ async def comment_on_job(
     """Comment on a job"""
     current_user = get_current_user(authorization)
     
+    # Security: Validate job_id format to prevent injection
+    if not validate_object_id(job_id):
+        raise HTTPException(status_code=400, detail="Invalid job ID format")
+    
+    # Security: Sanitize comment text to prevent XSS
+    comment_text = sanitize_string(comment_data.text)
+    
+    # Validate comment length
+    if not validate_input_length(comment_text, 500):
+        raise HTTPException(status_code=400, detail="Comment too long (max 500 characters)")
+    
+    if not comment_text.strip():
+        raise HTTPException(status_code=400, detail="Comment cannot be empty")
+    
     # Get user details
     user = await db.users.find_one({"id": current_user["userId"]})
     if not user:
@@ -357,8 +371,8 @@ async def comment_on_job(
     # Create comment
     comment = JobComment(
         userId=user["id"],
-        userName=user["fullName"],
-        text=comment_data.text
+        userName=sanitize_string(user["fullName"]),
+        text=comment_text
     )
     
     await db.jobs.update_one(
