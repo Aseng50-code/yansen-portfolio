@@ -66,7 +66,7 @@ const Pricing = () => {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-sky-950 mb-4 text-lg">When You Download ($4.99):</h3>
+                  <h3 className="font-semibold text-sky-950 mb-4 text-lg">When You Download (Rp 15,000):</h3>
                   <ul className="space-y-3">
                     <li className="flex items-start">
                       <Check className="w-5 h-5 text-sky-600 mr-3 mt-0.5 flex-shrink-0" />
