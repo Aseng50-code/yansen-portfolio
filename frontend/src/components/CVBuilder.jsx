@@ -5,10 +5,9 @@ import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Card } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Plus, Trash2, Download, ArrowLeft, Ship, Anchor } from 'lucide-react';
+import { Plus, Trash2, Download, ArrowLeft, Ship, Anchor, Upload, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { sampleCV } from '../mock/mockData';
-import { toast } from '../hooks/use-toast';
 
 const CVBuilder = () => {
   const [cvData, setCvData] = useState(() => {
@@ -16,10 +15,33 @@ const CVBuilder = () => {
     return saved ? JSON.parse(saved) : sampleCV;
   });
   const [selectedTemplate, setSelectedTemplate] = useState('nautical');
+  const [profilePhoto, setProfilePhoto] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('cvData', JSON.stringify(cvData));
   }, [cvData]);
+
+  useEffect(() => {
+    const savedPhoto = localStorage.getItem('profilePhoto');
+    if (savedPhoto) setProfilePhoto(savedPhoto);
+  }, []);
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePhoto(reader.result);
+        localStorage.setItem('profilePhoto', reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removePhoto = () => {
+    setProfilePhoto(null);
+    localStorage.removeItem('profilePhoto');
+  };
 
   const updatePersonalInfo = (field, value) => {
     setCvData(prev => ({
@@ -146,6 +168,54 @@ const CVBuilder = () => {
               {/* Personal Info Tab */}
               <TabsContent value="personal">
                 <Card className="p-6 space-y-4">
+                  {/* Photo Upload Section */}
+                  <div className="border-2 border-dashed border-sky-300 rounded-lg p-6 bg-sky-50">
+                    <Label className="text-sky-950 font-semibold mb-3 block">Profile Photo</Label>
+                    {profilePhoto ? (
+                      <div className="flex items-center space-x-4">
+                        <div className="relative">
+                          <img
+                            src={profilePhoto}
+                            alt="Profile"
+                            className="w-32 h-32 rounded-lg object-cover border-4 border-sky-200"
+                          />
+                          <button
+                            onClick={removePhoto}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-600 mb-2">Photo uploaded successfully!</p>
+                          <label className="cursor-pointer">
+                            <span className="text-sm text-sky-700 hover:text-sky-900 underline">
+                              Change photo
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handlePhotoUpload}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center cursor-pointer">
+                        <Upload className="w-12 h-12 text-sky-600 mb-2" />
+                        <span className="text-sm text-gray-700 mb-1">Click to upload your photo</span>
+                        <span className="text-xs text-gray-500">Recommended: Square image, max 2MB</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePhotoUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
+
                   <div>
                     <Label htmlFor="fullName">Full Name</Label>
                     <Input
@@ -366,16 +436,27 @@ const CVBuilder = () => {
               <div className="border border-gray-200 rounded-lg overflow-hidden">
                 {/* Header */}
                 <div
-                  className="text-white p-8"
+                  className="text-white p-8 relative"
                   style={{ backgroundColor: templateColors[selectedTemplate] }}
                 >
-                  <h2 className="text-3xl font-bold mb-2">{cvData.personalInfo.fullName || 'Your Name'}</h2>
-                  <p className="text-sm opacity-90">
-                    {cvData.personalInfo.title || 'Job Title'} | {cvData.personalInfo.location || 'Location'}
-                  </p>
-                  <div className="mt-4 text-sm space-y-1 opacity-90">
-                    {cvData.personalInfo.email && <p>{cvData.personalInfo.email}</p>}
-                    {cvData.personalInfo.phone && <p>{cvData.personalInfo.phone}</p>}
+                  <div className="flex items-start space-x-6">
+                    {profilePhoto && (
+                      <img
+                        src={profilePhoto}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-lg object-cover border-4 border-white/30 flex-shrink-0"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <h2 className="text-3xl font-bold mb-2">{cvData.personalInfo.fullName || 'Your Name'}</h2>
+                      <p className="text-sm opacity-90">
+                        {cvData.personalInfo.title || 'Job Title'} | {cvData.personalInfo.location || 'Location'}
+                      </p>
+                      <div className="mt-4 text-sm space-y-1 opacity-90">
+                        {cvData.personalInfo.email && <p>{cvData.personalInfo.email}</p>}
+                        {cvData.personalInfo.phone && <p>{cvData.personalInfo.phone}</p>}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
