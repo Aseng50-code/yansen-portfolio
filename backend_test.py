@@ -828,6 +828,7 @@ class BackendTester:
         """Run all backend tests"""
         print("=" * 80)
         print("BACKEND API TESTING - CV Build for SEAMAN")
+        print("Maritime Job Openings (Announcements) & Payment APIs")
         print("=" * 80)
         print(f"Base URL: {BASE_URL}")
         print(f"Admin Email: {ADMIN_EMAIL}")
@@ -836,8 +837,21 @@ class BackendTester:
         print()
         
         # Run tests in sequence
+        print("🚢 MARITIME JOB OPENINGS API TESTS")
+        print("-" * 40)
+        self.test_get_announcements()
+        self.test_admin_login()  # Login first for authenticated tests
+        self.test_create_announcement()
+        self.test_update_announcement()
+        self.test_like_announcement()
+        self.test_comment_on_announcement()
+        self.test_get_single_announcement()
+        self.test_delete_announcement()
+        
+        print("\n💰 PAYMENT & CV DOWNLOAD API TESTS")
+        print("-" * 40)
         self.test_payment_info_api()
-        self.test_admin_login()
+        # Note: admin_login already called above
         self.test_payment_status_check()
         self.test_cv_download_pdf_quality()
         self.test_get_all_payments()
@@ -855,6 +869,17 @@ class BackendTester:
         print(f"Passed: {passed_tests}")
         print(f"Failed: {failed_tests}")
         print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        print()
+        
+        # Categorize results
+        maritime_tests = [r for r in self.test_results if any(keyword in r["test"] for keyword in ["Announcement", "Like", "Comment"])]
+        payment_tests = [r for r in self.test_results if any(keyword in r["test"] for keyword in ["Payment", "CV Download", "Login"])]
+        
+        maritime_passed = sum(1 for r in maritime_tests if r["success"])
+        payment_passed = sum(1 for r in payment_tests if r["success"])
+        
+        print(f"🚢 Maritime Job Openings: {maritime_passed}/{len(maritime_tests)} passed")
+        print(f"💰 Payment & CV Download: {payment_passed}/{len(payment_tests)} passed")
         print()
         
         if failed_tests > 0:
