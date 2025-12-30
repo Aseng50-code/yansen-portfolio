@@ -28,7 +28,7 @@ const Pricing = () => {
                 </div>
                 <h2 className="text-3xl font-bold text-sky-950 mb-2">Free to Create</h2>
                 <div className="text-5xl font-bold text-sky-900 mb-2">
-                  $4.99
+                  Rp 15,000
                   <span className="text-xl font-normal text-gray-600">/download</span>
                 </div>
                 <p className="text-gray-600">Pay only when you need your PDF</p>
