@@ -30,6 +30,41 @@ def sanitize_string(text: str) -> str:
     
     return text.strip()
 
+def sanitize_html(text: str) -> str:
+    """
+    Sanitize HTML content to prevent XSS attacks while allowing safe formatting tags.
+    Used for rich text editor content.
+    - Allows safe HTML tags (p, strong, em, ul, ol, li, etc.)
+    - Removes dangerous tags and attributes (script, onclick, etc.)
+    """
+    if not isinstance(text, str):
+        return text
+    
+    # Remove script tags and their content
+    text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.IGNORECASE | re.DOTALL)
+    
+    # Remove style tags and their content
+    text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.IGNORECASE | re.DOTALL)
+    
+    # Remove all event handlers (onclick, onload, etc.)
+    text = re.sub(r'\s+on\w+\s*=\s*["\'][^"\']*["\']', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'\s+on\w+\s*=\s*\S+', '', text, flags=re.IGNORECASE)
+    
+    # Remove javascript: protocol
+    text = re.sub(r'javascript:', '', text, flags=re.IGNORECASE)
+    
+    # Remove data: protocol in URLs (can be used for XSS)
+    text = re.sub(r'data:[^;]*;base64', 'blocked', text, flags=re.IGNORECASE)
+    
+    # Remove iframe, object, embed tags
+    text = re.sub(r'<(iframe|object|embed)[^>]*>.*?</\1>', '', text, flags=re.IGNORECASE | re.DOTALL)
+    text = re.sub(r'<(iframe|object|embed)[^>]*/?>', '', text, flags=re.IGNORECASE)
+    
+    # Remove form tags
+    text = re.sub(r'<form[^>]*>.*?</form>', '', text, flags=re.IGNORECASE | re.DOTALL)
+    
+    return text.strip()
+
 def sanitize_dict(data: Dict[str, Any]) -> Dict[str, Any]:
     """Recursively sanitize dictionary values"""
     sanitized = {}
