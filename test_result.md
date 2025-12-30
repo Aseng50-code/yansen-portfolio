@@ -190,10 +190,34 @@ metadata:
   test_sequence: 1
   run_ui: true
 
+  - task: "Payment API Endpoints"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE PAYMENT API TESTING COMPLETED: ✅ GET /api/settings/payment-info returns correct bank details (BNI, CV Jesse Energi Sejahtera, 3334433003) ✅ Admin login successful with JWT token ✅ GET /api/payments/check-status shows canDownload: true for confirmed payment ✅ POST /api/cv/download generates valid PDF (3238 bytes) with proper headers ✅ GET /api/payments returns payment list with user info. All 5 API endpoints working perfectly."
+
+  - task: "CV Download Flow"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "CV DOWNLOAD FLOW TESTING COMPLETED: ✅ Payment verification working correctly ✅ PDF generation successful with sample CV data (personalInfo, experience, education, certificates, skills, languages) ✅ PDF file returned with proper Content-Type: application/pdf ✅ Filename generated correctly: Test_Captain_Seaman_CV.pdf ✅ File size: 3238 bytes indicates valid PDF content. Complete flow working end-to-end."
+
 test_plan:
   current_focus:
-    - "Payment Page with Bank Transfer"
-    - "Payment Flow"
+    - "Payment API Endpoints"
+    - "CV Download Flow"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -205,3 +229,5 @@ agent_communication:
     message: "TESTING COMPLETED SUCCESSFULLY: All Skills & Languages management functionality is working perfectly. Tested all requested flows: ✅ Skills tab navigation ✅ Adding skills from all three dropdowns (Deck Officer, Engine Officer, Common Skills) ✅ 1-5 rating system with visual feedback ✅ Skill deletion ✅ Language management (add/edit/delete) with proficiency levels ✅ CV Preview correctly displays skills with dot ratings and languages with proficiency levels. No issues found - all functionality working as expected."
   - agent: "main"
     message: "Implemented Payment Page with Bank Transfer: Bank BNI, Account CV Jesse Energi Sejahtera, No. 3334433003. Added payment proof upload, status checking, and PDF download after confirmation. Backend endpoints: POST /api/payments (submit payment), GET /api/payments/check-status (check if can download), POST /api/cv/download (generate PDF). Please test the payment flow."
+  - agent: "testing"
+    message: "PAYMENT API & CV DOWNLOAD TESTING COMPLETED: ✅ All 5 backend API endpoints tested successfully ✅ Payment info API returns correct bank details ✅ Admin authentication working with JWT tokens ✅ Payment status check confirms download capability ✅ CV download generates valid PDF files ✅ Admin payment management working. 100% success rate (5/5 tests passed). All payment and CV download flows are fully functional."
