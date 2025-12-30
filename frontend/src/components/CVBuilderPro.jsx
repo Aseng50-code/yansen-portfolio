@@ -159,7 +159,7 @@ const CVBuilderPro = () => {
   const CVPreviewContent = () => (
     <div className="bg-white" style={{ fontFamily: 'Arial, sans-serif', width: '210mm', minHeight: '297mm' }}>
       <div className="flex">
-        {/* Left Sidebar - Blue Section */}
+        {/* Left Sidebar - Blue Section (Only Name & Personal Details) */}
         <div className="w-[35%] bg-gradient-to-b from-sky-800 to-sky-900 text-white p-8 relative">
           {/* Name and Title */}
           <div className="text-center mb-8">
@@ -172,7 +172,7 @@ const CVBuilderPro = () => {
             </h2>
           </div>
 
-          {/* Photo Circle - Positioned to overflow */}
+          {/* Photo Circle */}
           <div className="flex justify-center mb-8 relative" style={{ marginTop: '-20px' }}>
             {profilePhoto ? (
               <div className="relative">
@@ -192,7 +192,7 @@ const CVBuilderPro = () => {
           </div>
 
           {/* Personal Details */}
-          <div className="mb-8">
+          <div>
             <h3 className="text-xl font-bold mb-4 uppercase border-b-2 border-white pb-2">
               Personal Details
             </h3>
@@ -275,51 +275,6 @@ const CVBuilderPro = () => {
               )}
             </div>
           </div>
-
-          {/* Skills Section */}
-          {cvData.skills && cvData.skills.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-xl font-bold mb-4 uppercase border-b-2 border-white pb-2">
-                Skills
-              </h3>
-              <div className="space-y-3">
-                {cvData.skills.map((skill, idx) => (
-                  <div key={idx}>
-                    <p className="text-sm mb-1 font-medium">{skill.name}</p>
-                    <div className="flex space-x-1">
-                      {[1, 2, 3, 4, 5].map((level) => (
-                        <div
-                          key={level}
-                          className={`w-4 h-4 rounded-full ${
-                            level <= (skill.level || 3)
-                              ? 'bg-white'
-                              : 'bg-white/30'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Languages */}
-          {cvData.languages && cvData.languages.length > 0 && (
-            <div>
-              <h3 className="text-xl font-bold mb-4 uppercase border-b-2 border-white pb-2">
-                Languages
-              </h3>
-              <div className="space-y-2 text-sm">
-                {cvData.languages.map((lang, idx) => (
-                  <div key={idx} className="flex justify-between">
-                    <span className="font-semibold">{lang.name}</span>
-                    <span className="opacity-90">{lang.level}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Right Main Content - White Section */}
@@ -365,7 +320,7 @@ const CVBuilderPro = () => {
             </div>
           )}
 
-          {/* Employment / Sea Service Section */}
+          {/* Employment Section */}
           {cvData.experience && cvData.experience.length > 0 && (
             <div className="mb-6">
               <h3 className="text-2xl font-bold text-sky-900 mb-3 uppercase border-b-4 border-sky-800 pb-2">
@@ -411,6 +366,51 @@ const CVBuilderPro = () => {
                       <p className="text-xs text-gray-600">{cert.date}</p>
                       {cert.validity && <p className="text-xs text-gray-500">Valid: {cert.validity}</p>}
                     </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Skills Section - NOW IN WHITE AREA */}
+          {cvData.skills && cvData.skills.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-sky-900 mb-3 uppercase border-b-4 border-sky-800 pb-2">
+                Professional Skills
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                {cvData.skills.map((skill, idx) => (
+                  <div key={idx} className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-800">{skill.name}</span>
+                    <div className="flex space-x-1">
+                      {[1, 2, 3, 4, 5].map((level) => (
+                        <div
+                          key={level}
+                          className={`w-3 h-3 rounded-full ${
+                            level <= (skill.level || 3)
+                              ? 'bg-sky-700'
+                              : 'bg-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Languages Section - NOW IN WHITE AREA */}
+          {cvData.languages && cvData.languages.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-sky-900 mb-3 uppercase border-b-4 border-sky-800 pb-2">
+                Languages
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                {cvData.languages.map((lang, idx) => (
+                  <div key={idx} className="flex justify-between items-center">
+                    <span className="text-sm font-semibold text-gray-900">{lang.name}</span>
+                    <span className="text-sm text-gray-600">{lang.level}</span>
                   </div>
                 ))}
               </div>
