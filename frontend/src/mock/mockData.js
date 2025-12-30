@@ -309,3 +309,21 @@ export const languageLevels = [
   'Fluent',
   'Native'
 ];
+
+export const howItWorksSteps = [
+  {
+    step: 1,
+    title: 'Enter your sea service',
+    description: 'Fill in your personal details, certificates, sea service experience, vessel types, and maritime skills.'
+  },
+  {
+    step: 2,
+    title: 'Choose maritime template',
+    description: 'Select from our professional seaman CV templates designed specifically for maritime industry.'
+  },
+  {
+    step: 3,
+    title: 'Download your Seaman CV',
+    description: 'Preview your professional maritime CV and download in PDF format to apply for your next vessel.'
+  }
+];
