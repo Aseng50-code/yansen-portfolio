@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -6,7 +6,7 @@ import { Label } from './ui/label';
 import { Card } from './ui/card';
 import { CheckCircle2, Anchor, Upload, Copy, Check, Clock, AlertCircle, Download } from 'lucide-react';
 import { toast } from '../hooks/use-toast';
-import { AuthContext } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -22,7 +22,7 @@ const Payment = () => {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(true);
   
-  const { user, token } = useContext(AuthContext);
+  const { user, token } = useAuth();
   const navigate = useNavigate();
 
   // Fetch payment info and check status on mount
