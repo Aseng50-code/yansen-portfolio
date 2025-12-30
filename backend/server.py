@@ -25,7 +25,7 @@ from auth_utils import (
 )
 from middleware import get_current_user, require_admin
 from security import (
-    sanitize_string, sanitize_dict, validate_email, validate_password,
+    sanitize_string, sanitize_html, sanitize_dict, validate_email, validate_password,
     validate_object_id, check_resource_ownership, sanitize_mongo_query,
     validate_input_length
 )
