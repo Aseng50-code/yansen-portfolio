@@ -1,23 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { 
-  Briefcase, MapPin, Ship, DollarSign, Calendar, Search, Heart, MessageCircle, 
-  Share2, Send, Plus, Trash2, Edit, Image, X, Copy, Check, 
-  Facebook, Linkedin, Twitter, MessageSquare, ExternalLink
+  Briefcase, Ship, Search, Heart, MessageCircle, 
+  Share2, Send, Plus, Trash2, Edit, X, Copy, Check, 
+  Facebook, Linkedin, MessageSquare, ChevronLeft
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../hooks/use-toast';
 import axios from 'axios';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
+// Rich text editor modules configuration
+const quillModules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    [{ 'color': [] }, { 'background': [] }],
+    ['link'],
+    ['clean']
+  ],
+};
+
+const quillFormats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet',
+  'color', 'background',
+  'link'
+];
+
 const MaritimeJobOpenings = () => {
+  const { id: urlAnnouncementId } = useParams();
   const { user, token } = useAuth();
   const isAdmin = user?.role === 'admin';
 
@@ -25,6 +48,7 @@ const MaritimeJobOpenings = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   
   // Dialog states
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -36,6 +60,7 @@ const MaritimeJobOpenings = () => {
   const [expandedComments, setExpandedComments] = useState({});
   const [newComment, setNewComment] = useState({});
   const [commentLoading, setCommentLoading] = useState({});
+  const [comments, setComments] = useState({});
   
   // Form state
   const [formData, setFormData] = useState({
@@ -53,6 +78,17 @@ const MaritimeJobOpenings = () => {
     fetchAnnouncements();
   }, []);
 
+  // Handle URL-based announcement selection
+  useEffect(() => {
+    if (urlAnnouncementId && announcements.length > 0) {
+      const announcement = announcements.find(a => a.id === urlAnnouncementId);
+      if (announcement) {
+        setSelectedAnnouncement(announcement);
+        fetchComments(announcement.id);
+      }
+    }
+  }, [urlAnnouncementId, announcements]);
+
   const fetchAnnouncements = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/announcements`);
@@ -66,16 +102,25 @@ const MaritimeJobOpenings = () => {
     }
   };
 
+  const fetchComments = async (announcementId) => {
+    try {
+      const response = await axios.get(`${API_URL}/api/announcements/${announcementId}`);
+      if (response.data.announcement?.comments) {
+        setComments(prev => ({ ...prev, [announcementId]: response.data.announcement.comments }));
+      }
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    }
+  };
+
   const getMockAnnouncements = () => [
     {
       id: '1',
       title: 'NMDC Group – Career Opportunities in the UAE',
       coverImage: 'https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?w=800',
-      body: `NMDC Group, one of the leading marine and dredging companies in the Middle East, is currently seeking qualified maritime professionals to join our expanding fleet operations.
-
-We offer competitive salaries, excellent benefits, and opportunities for career advancement within our global network.
-
-Our company values safety, professionalism, and continuous development of our crew members.`,
+      body: `<p><strong>NMDC Group</strong>, one of the leading marine and dredging companies in the Middle East, is currently seeking qualified maritime professionals to join our expanding fleet operations.</p>
+<p>We offer competitive salaries, excellent benefits, and opportunities for career advancement within our global network.</p>
+<p>Our company values <em>safety, professionalism, and continuous development</em> of our crew members.</p>`,
       positions: [
         { title: 'Master Mariner', description: 'Unlimited license required, 5+ years experience on DP vessels' },
         { title: 'Chief Officer', description: 'Valid COC, experience with dredging operations preferred' },
@@ -95,9 +140,13 @@ Our company values safety, professionalism, and continuous development of our cr
       id: '2',
       title: 'Maersk Line – Container Vessel Officers Needed',
       coverImage: 'https://images.unsplash.com/photo-1577993132227-66550458c8ce?w=800',
-      body: `Maersk Line, the world's largest container shipping company, is recruiting experienced deck and engine officers for our modern fleet.
-
-Join us for worldwide trading routes and excellent career progression opportunities.`,
+      body: `<p><strong>Maersk Line</strong>, the world's largest container shipping company, is recruiting experienced deck and engine officers for our modern fleet.</p>
+<p>Join us for worldwide trading routes and excellent career progression opportunities.</p>
+<ul>
+<li>Competitive salary packages</li>
+<li>Career development programs</li>
+<li>Global network opportunities</li>
+</ul>`,
       positions: [
         { title: 'Chief Officer', description: 'Container vessel experience, 3+ years as C/O' },
         { title: 'Second Engineer', description: 'Experience with MAN B&W engines' }
@@ -160,7 +209,7 @@ Join us for worldwide trading routes and excellent career progression opportunit
     setCommentLoading(prev => ({ ...prev, [announcementId]: true }));
 
     try {
-      await axios.post(
+      const response = await axios.post(
         `${API_URL}/api/announcements/${announcementId}/comment`,
         { content },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -169,8 +218,19 @@ Join us for worldwide trading routes and excellent career progression opportunit
       setNewComment(prev => ({ ...prev, [announcementId]: '' }));
       toast({ title: "Comment added", description: "Your comment has been posted" });
       
-      // Refresh to get updated comments
-      fetchAnnouncements();
+      // Update local comments
+      if (response.data.comment) {
+        setComments(prev => ({
+          ...prev,
+          [announcementId]: [response.data.comment, ...(prev[announcementId] || [])]
+        }));
+        // Update comment count
+        setAnnouncements(prev => prev.map(a => 
+          a.id === announcementId 
+            ? { ...a, commentsCount: (a.commentsCount || 0) + 1 }
+            : a
+        ));
+      }
     } catch (error) {
       toast({ 
         title: "Error", 
@@ -182,7 +242,17 @@ Join us for worldwide trading routes and excellent career progression opportunit
     }
   };
 
-  // Handle share
+  // Toggle comments visibility
+  const toggleComments = async (announcementId) => {
+    const newExpanded = !expandedComments[announcementId];
+    setExpandedComments(prev => ({ ...prev, [announcementId]: newExpanded }));
+    
+    if (newExpanded && !comments[announcementId]) {
+      fetchComments(announcementId);
+    }
+  };
+
+  // Handle share - Only LinkedIn and Facebook
   const handleShare = (platform, announcement) => {
     const url = `${window.location.origin}/jobs/${announcement.id}`;
     const text = `${announcement.title} - Maritime Career Opportunity`;
@@ -194,10 +264,8 @@ Join us for worldwide trading routes and excellent career progression opportunit
         setTimeout(() => setCopiedLink(false), 2000);
         toast({ title: "Link copied!", description: "Share link copied to clipboard" });
       },
-      whatsapp: () => window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + url)}`, '_blank'),
       facebook: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank'),
-      linkedin: () => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank'),
-      twitter: () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank')
+      linkedin: () => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank')
     };
     
     if (shareUrls[platform]) {
@@ -313,10 +381,12 @@ Join us for worldwide trading routes and excellent career progression opportunit
   };
 
   // Filter announcements
-  const filteredAnnouncements = announcements.filter(a => 
-    a.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.body.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (a.tags || []).some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredAnnouncements = useMemo(() => 
+    announcements.filter(a => 
+      a.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (a.body || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (a.tags || []).some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))
+    ), [announcements, searchTerm]
   );
 
   // Format date
@@ -325,10 +395,250 @@ Join us for worldwide trading routes and excellent career progression opportunit
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
+  // Render a single announcement card
+  const renderAnnouncementCard = (announcement, isDetail = false) => (
+    <Card key={announcement.id} className="overflow-hidden shadow-lg">
+      {/* Cover Image */}
+      {announcement.coverImage && (
+        <div className={`${isDetail ? 'h-64' : 'h-48'} overflow-hidden`}>
+          <img 
+            src={announcement.coverImage} 
+            alt={announcement.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+
+      {/* Content */}
+      <div className="p-6">
+        {/* Admin Actions */}
+        {isAdmin && (
+          <div className="flex justify-end gap-2 mb-4">
+            <Button variant="outline" size="sm" onClick={() => openEditDialog(announcement)}>
+              <Edit className="w-4 h-4 mr-1" /> Edit
+            </Button>
+            <Button variant="destructive" size="sm" onClick={() => handleDeleteAnnouncement(announcement.id)}>
+              <Trash2 className="w-4 h-4 mr-1" /> Delete
+            </Button>
+          </div>
+        )}
+
+        {/* Title */}
+        <h2 className="text-2xl font-bold text-sky-950 mb-2">
+          {announcement.title}
+        </h2>
+
+        {/* Meta */}
+        <div className="flex items-center text-sm text-gray-500 mb-4">
+          <span>Posted by {announcement.authorName}</span>
+          <span className="mx-2">•</span>
+          <span>{formatDate(announcement.createdAt)}</span>
+        </div>
+
+        {/* Body - Render HTML from rich text editor */}
+        <div 
+          className="prose prose-sm max-w-none text-gray-700 mb-6"
+          dangerouslySetInnerHTML={{ __html: announcement.body }}
+        />
+
+        {/* Positions List */}
+        {announcement.positions && announcement.positions.length > 0 && (
+          <div className="bg-sky-50 rounded-lg p-4 mb-6">
+            <h3 className="font-bold text-sky-900 mb-3 flex items-center">
+              <Ship className="w-5 h-5 mr-2" />
+              Open Positions
+            </h3>
+            <ol className="list-decimal list-inside space-y-2">
+              {announcement.positions.map((pos, idx) => (
+                <li key={idx} className="text-gray-700">
+                  <span className="font-semibold">{pos.title}</span>
+                  {pos.description && (
+                    <span className="text-gray-600"> – {pos.description}</span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+
+        {/* Contact Info */}
+        {announcement.contactInfo && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <h3 className="font-bold text-green-800 mb-2 flex items-center">
+              <MessageSquare className="w-5 h-5 mr-2" />
+              How to Apply
+            </h3>
+            <p className="text-green-700 whitespace-pre-line text-sm">
+              {announcement.contactInfo}
+            </p>
+          </div>
+        )}
+
+        {/* Tags */}
+        {announcement.tags && announcement.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {announcement.tags.map((tag, idx) => (
+              <Badge key={idx} variant="secondary" className="bg-sky-100 text-sky-800">
+                #{tag}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Social Bar */}
+        <div className="border-t pt-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              {/* Like */}
+              <button
+                onClick={() => handleLike(announcement.id)}
+                className={`flex items-center space-x-1 transition-colors ${
+                  (announcement.likedBy || []).includes(user?.id)
+                    ? 'text-red-600'
+                    : 'text-gray-600 hover:text-red-600'
+                }`}
+              >
+                <Heart className={`w-5 h-5 ${(announcement.likedBy || []).includes(user?.id) ? 'fill-current' : ''}`} />
+                <span className="text-sm font-medium">{announcement.likes || 0}</span>
+              </button>
+
+              {/* Comments */}
+              <button
+                onClick={() => toggleComments(announcement.id)}
+                className="flex items-center space-x-1 text-gray-600 hover:text-sky-700 transition-colors"
+              >
+                <MessageCircle className="w-5 h-5" />
+                <span className="text-sm font-medium">{announcement.commentsCount || 0}</span>
+              </button>
+
+              {/* Share */}
+              <button
+                onClick={() => setShowShareDialog(announcement.id)}
+                className="flex items-center space-x-1 text-gray-600 hover:text-sky-700 transition-colors"
+              >
+                <Share2 className="w-5 h-5" />
+                <span className="text-sm font-medium">Share</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Share Dialog - Only LinkedIn and Facebook */}
+          {showShareDialog === announcement.id && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-semibold text-gray-800 mb-3">Share this opportunity</h4>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={() => handleShare('copy', announcement)}>
+                  {copiedLink ? <Check className="w-4 h-4 mr-1" /> : <Copy className="w-4 h-4 mr-1" />}
+                  Copy Link
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleShare('facebook', announcement)} className="text-blue-600 border-blue-600 hover:bg-blue-50">
+                  <Facebook className="w-4 h-4 mr-1" />
+                  Facebook
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleShare('linkedin', announcement)} className="text-blue-700 border-blue-700 hover:bg-blue-50">
+                  <Linkedin className="w-4 h-4 mr-1" />
+                  LinkedIn
+                </Button>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setShowShareDialog(null)} className="mt-2">
+                Close
+              </Button>
+            </div>
+          )}
+
+          {/* Comments Section */}
+          {expandedComments[announcement.id] && (
+            <div className="mt-4 pt-4 border-t">
+              {/* Add Comment */}
+              {user ? (
+                <div className="flex gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-sky-200 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sky-800 font-semibold text-sm">{user.fullName?.[0] || 'U'}</span>
+                  </div>
+                  <div className="flex-1 flex gap-2">
+                    <Input
+                      placeholder="Write a comment..."
+                      value={newComment[announcement.id] || ''}
+                      onChange={(e) => setNewComment(prev => ({ ...prev, [announcement.id]: e.target.value }))}
+                      onKeyPress={(e) => e.key === 'Enter' && handleComment(announcement.id)}
+                      maxLength={1000}
+                    />
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleComment(announcement.id)}
+                      disabled={commentLoading[announcement.id]}
+                      className="bg-sky-700 hover:bg-sky-800"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 mb-4">
+                  <a href="/login" className="text-sky-700 hover:underline">Login</a> to add a comment
+                </p>
+              )}
+
+              {/* Comments List */}
+              <div className="space-y-3">
+                {(comments[announcement.id] || []).length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    No comments yet. Be the first to comment!
+                  </p>
+                ) : (
+                  (comments[announcement.id] || []).map((comment) => (
+                    <div key={comment.id} className="flex gap-2">
+                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                        <span className="text-gray-700 font-semibold text-sm">
+                          {comment.displayName?.[0] || 'U'}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="bg-gray-100 rounded-lg p-3">
+                          <p className="font-semibold text-sm text-gray-900">{comment.displayName}</p>
+                          <p className="text-sm text-gray-700 mt-1">{comment.content}</p>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatDate(comment.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-4 border-sky-700 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  // Show single announcement detail view
+  if (selectedAnnouncement) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <Button 
+            variant="ghost" 
+            className="mb-6" 
+            onClick={() => {
+              setSelectedAnnouncement(null);
+              window.history.pushState({}, '', '/jobs');
+            }}
+          >
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            Back to All Announcements
+          </Button>
+          {renderAnnouncementCard(selectedAnnouncement, true)}
+        </div>
       </div>
     );
   }
@@ -377,229 +687,7 @@ Join us for worldwide trading routes and excellent career progression opportunit
 
         {/* Announcements Feed */}
         <div className="space-y-6">
-          {filteredAnnouncements.map((announcement) => (
-            <Card key={announcement.id} className="overflow-hidden shadow-lg">
-              {/* Cover Image */}
-              {announcement.coverImage && (
-                <div className="h-48 overflow-hidden">
-                  <img 
-                    src={announcement.coverImage} 
-                    alt={announcement.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-
-              {/* Content */}
-              <div className="p-6">
-                {/* Admin Actions */}
-                {isAdmin && (
-                  <div className="flex justify-end gap-2 mb-4">
-                    <Button variant="outline" size="sm" onClick={() => openEditDialog(announcement)}>
-                      <Edit className="w-4 h-4 mr-1" /> Edit
-                    </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDeleteAnnouncement(announcement.id)}>
-                      <Trash2 className="w-4 h-4 mr-1" /> Delete
-                    </Button>
-                  </div>
-                )}
-
-                {/* Title */}
-                <h2 className="text-2xl font-bold text-sky-950 mb-2">
-                  {announcement.title}
-                </h2>
-
-                {/* Meta */}
-                <div className="flex items-center text-sm text-gray-500 mb-4">
-                  <span>Posted by {announcement.authorName}</span>
-                  <span className="mx-2">•</span>
-                  <span>{formatDate(announcement.createdAt)}</span>
-                </div>
-
-                {/* Body - Preserve formatting */}
-                <div className="prose prose-sm max-w-none text-gray-700 mb-6 whitespace-pre-line">
-                  {announcement.body}
-                </div>
-
-                {/* Positions List */}
-                {announcement.positions && announcement.positions.length > 0 && (
-                  <div className="bg-sky-50 rounded-lg p-4 mb-6">
-                    <h3 className="font-bold text-sky-900 mb-3 flex items-center">
-                      <Ship className="w-5 h-5 mr-2" />
-                      Open Positions
-                    </h3>
-                    <ol className="list-decimal list-inside space-y-2">
-                      {announcement.positions.map((pos, idx) => (
-                        <li key={idx} className="text-gray-700">
-                          <span className="font-semibold">{pos.title}</span>
-                          {pos.description && (
-                            <span className="text-gray-600"> – {pos.description}</span>
-                          )}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-
-                {/* Contact Info */}
-                {announcement.contactInfo && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                    <h3 className="font-bold text-green-800 mb-2 flex items-center">
-                      <MessageSquare className="w-5 h-5 mr-2" />
-                      How to Apply
-                    </h3>
-                    <p className="text-green-700 whitespace-pre-line text-sm">
-                      {announcement.contactInfo}
-                    </p>
-                  </div>
-                )}
-
-                {/* Tags */}
-                {announcement.tags && announcement.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {announcement.tags.map((tag, idx) => (
-                      <Badge key={idx} variant="secondary" className="bg-sky-100 text-sky-800">
-                        #{tag}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-
-                {/* Social Bar */}
-                <div className="border-t pt-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      {/* Like */}
-                      <button
-                        onClick={() => handleLike(announcement.id)}
-                        className={`flex items-center space-x-1 transition-colors ${
-                          (announcement.likedBy || []).includes(user?.id)
-                            ? 'text-red-600'
-                            : 'text-gray-600 hover:text-red-600'
-                        }`}
-                      >
-                        <Heart className={`w-5 h-5 ${(announcement.likedBy || []).includes(user?.id) ? 'fill-current' : ''}`} />
-                        <span className="text-sm font-medium">{announcement.likes || 0}</span>
-                      </button>
-
-                      {/* Comments */}
-                      <button
-                        onClick={() => setExpandedComments(prev => ({ ...prev, [announcement.id]: !prev[announcement.id] }))}
-                        className="flex items-center space-x-1 text-gray-600 hover:text-sky-700 transition-colors"
-                      >
-                        <MessageCircle className="w-5 h-5" />
-                        <span className="text-sm font-medium">{announcement.commentsCount || 0}</span>
-                      </button>
-
-                      {/* Share */}
-                      <button
-                        onClick={() => setShowShareDialog(announcement.id)}
-                        className="flex items-center space-x-1 text-gray-600 hover:text-sky-700 transition-colors"
-                      >
-                        <Share2 className="w-5 h-5" />
-                        <span className="text-sm font-medium">Share</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Share Dialog */}
-                  {showShareDialog === announcement.id && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                      <h4 className="font-semibold text-gray-800 mb-3">Share this opportunity</h4>
-                      <div className="flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleShare('copy', announcement)}>
-                          {copiedLink ? <Check className="w-4 h-4 mr-1" /> : <Copy className="w-4 h-4 mr-1" />}
-                          Copy Link
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleShare('whatsapp', announcement)} className="text-green-600 border-green-600 hover:bg-green-50">
-                          <MessageSquare className="w-4 h-4 mr-1" />
-                          WhatsApp
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleShare('facebook', announcement)} className="text-blue-600 border-blue-600 hover:bg-blue-50">
-                          <Facebook className="w-4 h-4 mr-1" />
-                          Facebook
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleShare('linkedin', announcement)} className="text-blue-700 border-blue-700 hover:bg-blue-50">
-                          <Linkedin className="w-4 h-4 mr-1" />
-                          LinkedIn
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleShare('twitter', announcement)} className="text-gray-900 border-gray-900 hover:bg-gray-50">
-                          <Twitter className="w-4 h-4 mr-1" />
-                          X
-                        </Button>
-                      </div>
-                      <Button variant="ghost" size="sm" onClick={() => setShowShareDialog(null)} className="mt-2">
-                        Close
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Comments Section */}
-                  {expandedComments[announcement.id] && (
-                    <div className="mt-4 pt-4 border-t">
-                      {/* Add Comment */}
-                      {user ? (
-                        <div className="flex gap-2 mb-4">
-                          <div className="w-8 h-8 rounded-full bg-sky-200 flex items-center justify-center flex-shrink-0">
-                            <span className="text-sky-800 font-semibold text-sm">{user.fullName?.[0] || 'U'}</span>
-                          </div>
-                          <div className="flex-1 flex gap-2">
-                            <Input
-                              placeholder="Write a comment..."
-                              value={newComment[announcement.id] || ''}
-                              onChange={(e) => setNewComment(prev => ({ ...prev, [announcement.id]: e.target.value }))}
-                              onKeyPress={(e) => e.key === 'Enter' && handleComment(announcement.id)}
-                              maxLength={1000}
-                            />
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleComment(announcement.id)}
-                              disabled={commentLoading[announcement.id]}
-                              className="bg-sky-700 hover:bg-sky-800"
-                            >
-                              <Send className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-500 mb-4">
-                          <a href="/login" className="text-sky-700 hover:underline">Login</a> to add a comment
-                        </p>
-                      )}
-
-                      {/* Comments List */}
-                      <div className="space-y-3">
-                        {(announcement.comments || []).length === 0 ? (
-                          <p className="text-sm text-gray-500 text-center py-4">
-                            No comments yet. Be the first to comment!
-                          </p>
-                        ) : (
-                          (announcement.comments || []).map((comment) => (
-                            <div key={comment.id} className="flex gap-2">
-                              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                                <span className="text-gray-700 font-semibold text-sm">
-                                  {comment.displayName?.[0] || 'U'}
-                                </span>
-                              </div>
-                              <div className="flex-1">
-                                <div className="bg-gray-100 rounded-lg p-3">
-                                  <p className="font-semibold text-sm text-gray-900">{comment.displayName}</p>
-                                  <p className="text-sm text-gray-700 mt-1">{comment.content}</p>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1">
-                                  {formatDate(comment.createdAt)}
-                                </p>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Card>
-          ))}
+          {filteredAnnouncements.map((announcement) => renderAnnouncementCard(announcement))}
         </div>
 
         {filteredAnnouncements.length === 0 && (
@@ -622,9 +710,9 @@ Join us for worldwide trading routes and excellent career progression opportunit
         </div>
       </div>
 
-      {/* Create/Edit Dialog */}
+      {/* Create/Edit Dialog with Rich Text Editor */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingAnnouncement ? 'Edit Announcement' : 'Create Announcement'}
@@ -648,16 +736,27 @@ Join us for worldwide trading routes and excellent career progression opportunit
                 onChange={(e) => setFormData(prev => ({ ...prev, coverImage: e.target.value }))}
                 placeholder="https://example.com/image.jpg"
               />
+              {formData.coverImage && (
+                <div className="mt-2 h-32 rounded overflow-hidden">
+                  <img src={formData.coverImage} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
             </div>
 
             <div>
-              <Label>Body Content *</Label>
-              <Textarea
-                value={formData.body}
-                onChange={(e) => setFormData(prev => ({ ...prev, body: e.target.value }))}
-                placeholder="Write your announcement content here. Use line breaks for paragraphs."
-                rows={6}
-              />
+              <Label>Body Content * (Rich Text)</Label>
+              <div className="mt-1">
+                <ReactQuill 
+                  theme="snow"
+                  value={formData.body}
+                  onChange={(value) => setFormData(prev => ({ ...prev, body: value }))}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  placeholder="Write your announcement content here. Use the toolbar to format text, add lists, and links."
+                  className="bg-white rounded-md"
+                  style={{ minHeight: '200px' }}
+                />
+              </div>
             </div>
 
             <div>
@@ -692,11 +791,12 @@ Join us for worldwide trading routes and excellent career progression opportunit
 
             <div>
               <Label>Contact Information</Label>
-              <Textarea
+              <textarea
                 value={formData.contactInfo}
                 onChange={(e) => setFormData(prev => ({ ...prev, contactInfo: e.target.value }))}
                 placeholder="Email, phone, or application instructions"
                 rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -714,7 +814,7 @@ Join us for worldwide trading routes and excellent career progression opportunit
               <select
                 value={formData.status}
                 onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
               >
                 <option value="published">Published</option>
                 <option value="draft">Draft</option>
