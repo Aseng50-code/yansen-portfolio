@@ -423,50 +423,7 @@ const CVBuilderPro = () => {
             </div>
           )}
 
-          {/* Skills Section - NOW IN WHITE AREA */}
-          {cvData.skills && cvData.skills.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold text-sky-900 mb-3 uppercase border-b-4 border-sky-800 pb-2">
-                Professional Skills
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                {cvData.skills.map((skill, idx) => (
-                  <div key={idx} className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-800">{skill.name}</span>
-                    <div className="flex space-x-1">
-                      {[1, 2, 3, 4, 5].map((level) => (
-                        <div
-                          key={level}
-                          className={`w-3 h-3 rounded-full ${
-                            level <= (skill.level || 3)
-                              ? 'bg-sky-700'
-                              : 'bg-gray-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Languages Section - NOW IN WHITE AREA */}
-          {cvData.languages && cvData.languages.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold text-sky-900 mb-3 uppercase border-b-4 border-sky-800 pb-2">
-                Languages
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                {cvData.languages.map((lang, idx) => (
-                  <div key={idx} className="flex justify-between items-center">
-                    <span className="text-sm font-semibold text-gray-900">{lang.name}</span>
-                    <span className="text-sm text-gray-600">{lang.level}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Skills and Languages sections moved to left sidebar */}
         </div>
       </div>
     </div>
