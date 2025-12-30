@@ -246,20 +246,66 @@ export const sampleCV = {
   ]
 };
 
-export const howItWorksSteps = [
-  {
-    step: 1,
-    title: 'Enter your sea service',
-    description: 'Fill in your personal details, certificates, sea service experience, vessel types, and maritime skills.'
-  },
-  {
-    step: 2,
-    title: 'Choose maritime template',
-    description: 'Select from our professional seaman CV templates designed specifically for maritime industry.'
-  },
-  {
-    step: 3,
-    title: 'Download your Seaman CV',
-    description: 'Preview your professional maritime CV and download in PDF format to apply for your next vessel.'
-  }
+export const maritimeSkillsOptions = {
+  deckOfficer: [
+    'Navigation & Bridge Watchkeeping',
+    'ECDIS & Radar Operations',
+    'Cargo Operations',
+    'Ship Stability & Trim',
+    'ISM/ISPS Compliance',
+    'Crew Management',
+    'Port Operations',
+    'GMDSS Communications',
+    'Meteorology & Weather Routing',
+    'Collision Avoidance (COLREGS)',
+    'Chart Work & Passage Planning',
+    'Anchor Handling',
+    'Mooring Operations',
+    'Pilot Coordination',
+    'Ship Security (ISPS)',
+    'Emergency Response',
+    'Life Saving Appliances',
+    'Fire Fighting'
+  ],
+  engineOfficer: [
+    'Main Engine Operations',
+    'Auxiliary Machinery',
+    'Electrical Systems',
+    'Refrigeration & HVAC',
+    'Fuel Oil Systems',
+    'Steam Systems',
+    'Hydraulic Systems',
+    'Pneumatic Systems',
+    'Automation & Control Systems',
+    'Engine Room Watchkeeping',
+    'Machinery Maintenance',
+    'Welding & Fabrication',
+    'Pump Operations',
+    'Boiler Operations',
+    'Power Generation',
+    'Propulsion Systems',
+    'Marine Diesel Engines',
+    'Troubleshooting & Repair'
+  ],
+  common: [
+    'Safety Management Systems',
+    'Environmental Compliance',
+    'ISM Code',
+    'MARPOL Regulations',
+    'Ship Stability',
+    'Cargo Handling',
+    'Technical English',
+    'Computer Applications',
+    'Report Writing',
+    'Leadership'
+  ]
+};
+
+export const languageLevels = [
+  'Basic',
+  'Conversational', 
+  'Intermediate',
+  'Advanced',
+  'Fluent',
+  'Native'
 ];
