@@ -1,12 +1,15 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 from pathlib import Path
 from typing import Optional, List
 from datetime import datetime
+from io import BytesIO
 import os
 import logging
+import base64
 
 from models import (
     UserCreate, UserLogin, User, UserResponse, Token, VerifyEmail, ChangePassword,
@@ -24,6 +27,7 @@ from security import (
     validate_object_id, check_resource_ownership, sanitize_mongo_query,
     validate_input_length
 )
+from pdf_generator import generate_cv_pdf
 
 # Setup
 ROOT_DIR = Path(__file__).parent
