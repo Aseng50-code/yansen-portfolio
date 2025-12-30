@@ -896,6 +896,164 @@ const CVBuilderPro = () => {
                   </Button>
                 </div>
               </TabsContent>
+
+              {/* Skills & Languages Tab */}
+              <TabsContent value="skills">
+                <div className="space-y-6">
+                  {/* Skills Section */}
+                  <Card className="p-6 border-sky-200">
+                    <h3 className="font-semibold text-lg text-sky-950 flex items-center mb-4">
+                      <Star className="w-5 h-5 mr-2 text-sky-700" />
+                      Professional Skills
+                    </h3>
+                    
+                    {/* Officer Type Selector */}
+                    <div className="mb-4">
+                      <Label className="mb-2 block">Select skill category to add</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm text-gray-600 mb-1 block">Deck Officer Skills</Label>
+                          <Select onValueChange={(value) => addSkill(value)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a deck skill..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {maritimeSkillsOptions.deckOfficer.map((skill) => (
+                                <SelectItem key={skill} value={skill}>{skill}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-sm text-gray-600 mb-1 block">Engine Officer Skills</Label>
+                          <Select onValueChange={(value) => addSkill(value)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select an engine skill..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {maritimeSkillsOptions.engineOfficer.map((skill) => (
+                                <SelectItem key={skill} value={skill}>{skill}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <Label className="text-sm text-gray-600 mb-1 block">Common Skills</Label>
+                        <Select onValueChange={(value) => addSkill(value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a common skill..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {maritimeSkillsOptions.common.map((skill) => (
+                              <SelectItem key={skill} value={skill}>{skill}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Current Skills List */}
+                    <div className="space-y-3 mt-6">
+                      <Label className="font-medium">Your Skills (Click stars to rate 1-5)</Label>
+                      {(cvData.skills || []).length === 0 ? (
+                        <p className="text-sm text-gray-500 italic py-4 text-center bg-gray-50 rounded-lg">
+                          No skills added yet. Select skills from the dropdowns above.
+                        </p>
+                      ) : (
+                        (cvData.skills || []).map((skill) => (
+                          <div key={skill.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span className="font-medium text-gray-800 flex-1">{skill.name}</span>
+                            <div className="flex items-center space-x-3">
+                              {/* Star Rating */}
+                              <div className="flex space-x-1">
+                                {[1, 2, 3, 4, 5].map((level) => (
+                                  <button
+                                    key={level}
+                                    type="button"
+                                    onClick={() => updateSkillLevel(skill.name, level)}
+                                    className={`w-6 h-6 rounded-full transition-colors ${
+                                      level <= skill.level
+                                        ? 'bg-sky-700 hover:bg-sky-800'
+                                        : 'bg-gray-300 hover:bg-gray-400'
+                                    }`}
+                                    title={`Rate ${level} out of 5`}
+                                  />
+                                ))}
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteSkill(skill.name)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </Card>
+
+                  {/* Languages Section */}
+                  <Card className="p-6 border-sky-200">
+                    <h3 className="font-semibold text-lg text-sky-950 flex items-center mb-4">
+                      <Globe className="w-5 h-5 mr-2 text-sky-700" />
+                      Languages
+                    </h3>
+                    
+                    <div className="space-y-3">
+                      {(cvData.languages || []).length === 0 ? (
+                        <p className="text-sm text-gray-500 italic py-4 text-center bg-gray-50 rounded-lg">
+                          No languages added yet. Click "Add Language" below.
+                        </p>
+                      ) : (
+                        (cvData.languages || []).map((lang, index) => (
+                          <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                            <div className="flex-1">
+                              <Input
+                                value={lang.name}
+                                onChange={(e) => updateLanguage(index, 'name', e.target.value)}
+                                placeholder="Language name (e.g., English)"
+                                className="mb-2"
+                              />
+                            </div>
+                            <div className="w-40">
+                              <Select 
+                                value={lang.level} 
+                                onValueChange={(value) => updateLanguage(index, 'level', value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Proficiency" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {languageLevels.map((level) => (
+                                    <SelectItem key={level} value={level}>{level}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteLanguage(index)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    
+                    <Button onClick={addLanguage} variant="outline" className="w-full mt-4 border-sky-700 text-sky-900 hover:bg-sky-50">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Language
+                    </Button>
+                  </Card>
+                </div>
+              </TabsContent>
             </Tabs>
           </div>
 
