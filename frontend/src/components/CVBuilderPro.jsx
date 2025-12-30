@@ -6,9 +6,10 @@ import { Label } from './ui/label';
 import { Card } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { Plus, Trash2, Download, ArrowLeft, Ship, Anchor, Upload, X, Eye, Mail, Phone, MapPin, Calendar, Globe } from 'lucide-react';
+import { Plus, Trash2, Download, ArrowLeft, Ship, Anchor, Upload, X, Eye, Mail, Phone, MapPin, Calendar, Globe, Star, Languages } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { sampleCV } from '../mock/mockData';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { sampleCV, maritimeSkillsOptions, languageLevels } from '../mock/mockData';
 
 const CVBuilderPro = () => {
   const [cvData, setCvData] = useState(() => {
@@ -149,6 +150,64 @@ const CVBuilderPro = () => {
     setCvData(prev => ({
       ...prev,
       certificates: (prev.certificates || []).filter(cert => cert.id !== id)
+    }));
+  };
+
+  // Skills management functions
+  const addSkill = (skillName) => {
+    if (!skillName) return;
+    const existingSkill = (cvData.skills || []).find(s => s.name === skillName);
+    if (existingSkill) return; // Don't add duplicates
+    
+    setCvData(prev => ({
+      ...prev,
+      skills: [
+        ...(prev.skills || []),
+        { name: skillName, level: 3 }
+      ]
+    }));
+  };
+
+  const updateSkillLevel = (skillName, level) => {
+    setCvData(prev => ({
+      ...prev,
+      skills: (prev.skills || []).map(skill =>
+        skill.name === skillName ? { ...skill, level } : skill
+      )
+    }));
+  };
+
+  const deleteSkill = (skillName) => {
+    setCvData(prev => ({
+      ...prev,
+      skills: (prev.skills || []).filter(skill => skill.name !== skillName)
+    }));
+  };
+
+  // Languages management functions
+  const addLanguage = () => {
+    setCvData(prev => ({
+      ...prev,
+      languages: [
+        ...(prev.languages || []),
+        { name: '', level: 'Intermediate' }
+      ]
+    }));
+  };
+
+  const updateLanguage = (index, field, value) => {
+    setCvData(prev => ({
+      ...prev,
+      languages: (prev.languages || []).map((lang, idx) =>
+        idx === index ? { ...lang, [field]: value } : lang
+      )
+    }));
+  };
+
+  const deleteLanguage = (index) => {
+    setCvData(prev => ({
+      ...prev,
+      languages: (prev.languages || []).filter((_, idx) => idx !== index)
     }));
   };
 
