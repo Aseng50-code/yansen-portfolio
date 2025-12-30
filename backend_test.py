@@ -388,7 +388,7 @@ class BackendTester:
         self.test_payment_info_api()
         self.test_admin_login()
         self.test_payment_status_check()
-        self.test_cv_download()
+        self.test_cv_download_pdf_quality()
         self.test_get_all_payments()
         
         # Summary
