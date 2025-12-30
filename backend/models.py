@@ -113,3 +113,7 @@ class Token(BaseModel):
 
 class VerifyEmail(BaseModel):
     token: str
+
+class ChangePassword(BaseModel):
+    currentPassword: str
+    newPassword: str
