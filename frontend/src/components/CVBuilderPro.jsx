@@ -159,126 +159,177 @@ const CVBuilderPro = () => {
   const CVPreviewContent = () => (
     <div className="bg-white" style={{ fontFamily: 'Arial, sans-serif', width: '210mm', minHeight: '297mm' }}>
       <div className="flex">
-        {/* Left Sidebar - Blue Section (Only Name & Personal Details) */}
-        <div className="w-[35%] bg-gradient-to-b from-sky-800 to-sky-900 text-white p-8 relative">
-          {/* Name and Title */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2 leading-tight">
-              {cvData.personalInfo.fullName || 'YOUR NAME'}
-            </h1>
-            <div className="h-1 w-24 bg-white mx-auto mb-3"></div>
-            <h2 className="text-lg font-semibold">
-              {cvData.personalInfo.title || 'Professional Title'}
-            </h2>
-          </div>
+        {/* Left Sidebar - Contains Blue Personal Details + White Skills/Languages */}
+        <div className="w-[35%] bg-white">
+          {/* Blue Section - Personal Details Only */}
+          <div className="bg-gradient-to-b from-sky-800 to-sky-900 text-white p-8">
+            {/* Name and Title */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold mb-2 leading-tight">
+                {cvData.personalInfo.fullName || 'YOUR NAME'}
+              </h1>
+              <div className="h-1 w-24 bg-white mx-auto mb-3"></div>
+              <h2 className="text-lg font-semibold">
+                {cvData.personalInfo.title || 'Professional Title'}
+              </h2>
+            </div>
 
-          {/* Photo Circle */}
-          <div className="flex justify-center mb-8 relative" style={{ marginTop: '-20px' }}>
-            {profilePhoto ? (
-              <div className="relative">
-                <div className="w-48 h-48 rounded-full border-8 border-white overflow-hidden shadow-2xl bg-gray-200">
-                  <img
-                    src={profilePhoto}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="w-48 h-48 rounded-full border-8 border-white bg-gray-300 flex items-center justify-center shadow-2xl">
-                <span className="text-gray-500 text-sm text-center px-4">Upload Photo</span>
-              </div>
-            )}
-          </div>
-
-          {/* Personal Details */}
-          <div>
-            <h3 className="text-xl font-bold mb-4 uppercase border-b-2 border-white pb-2">
-              Personal Details
-            </h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <p className="break-words">{cvData.personalInfo.fullName || 'Your Name'}</p>
-                </div>
-              </div>
-
-              {cvData.personalInfo.email && (
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="break-words">{cvData.personalInfo.email}</p>
+            {/* Photo Circle */}
+            <div className="flex justify-center mb-8 relative" style={{ marginTop: '-20px' }}>
+              {profilePhoto ? (
+                <div className="relative">
+                  <div className="w-48 h-48 rounded-full border-8 border-white overflow-hidden shadow-2xl bg-gray-200">
+                    <img
+                      src={profilePhoto}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 </div>
-              )}
-
-              {cvData.personalInfo.phone && (
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="break-words">{cvData.personalInfo.phone}</p>
-                  </div>
-                </div>
-              )}
-
-              {cvData.personalInfo.location && (
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="break-words">{cvData.personalInfo.location}</p>
-                  </div>
-                </div>
-              )}
-
-              {cvData.personalInfo.nationality && (
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="break-words">{cvData.personalInfo.nationality}</p>
-                  </div>
-                </div>
-              )}
-
-              {cvData.personalInfo.dateOfBirth && (
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="break-words">{cvData.personalInfo.dateOfBirth}</p>
-                  </div>
+              ) : (
+                <div className="w-48 h-48 rounded-full border-8 border-white bg-gray-300 flex items-center justify-center shadow-2xl">
+                  <span className="text-gray-500 text-sm text-center px-4">Upload Photo</span>
                 </div>
               )}
             </div>
+
+            {/* Personal Details - Last item in Blue Section */}
+            <div>
+              <h3 className="text-xl font-bold mb-4 uppercase border-b-2 border-white pb-2">
+                Personal Details
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="break-words">{cvData.personalInfo.fullName || 'Your Name'}</p>
+                  </div>
+                </div>
+
+                {cvData.personalInfo.email && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="break-words">{cvData.personalInfo.email}</p>
+                    </div>
+                  </div>
+                )}
+
+                {cvData.personalInfo.phone && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="break-words">{cvData.personalInfo.phone}</p>
+                    </div>
+                  </div>
+                )}
+
+                {cvData.personalInfo.location && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="break-words">{cvData.personalInfo.location}</p>
+                    </div>
+                  </div>
+                )}
+
+                {cvData.personalInfo.nationality && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="break-words">{cvData.personalInfo.nationality}</p>
+                    </div>
+                  </div>
+                )}
+
+                {cvData.personalInfo.dateOfBirth && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="break-words">{cvData.personalInfo.dateOfBirth}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* White Section Below Blue - Skills & Languages */}
+          <div className="p-8 bg-white">
+            {/* Skills Section */}
+            {cvData.skills && cvData.skills.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-sky-900 mb-4 uppercase border-b-2 border-sky-800 pb-2">
+                  Skills
+                </h3>
+                <div className="space-y-3">
+                  {cvData.skills.map((skill, idx) => (
+                    <div key={idx}>
+                      <p className="text-sm mb-1 font-medium text-gray-800">{skill.name}</p>
+                      <div className="flex space-x-1">
+                        {[1, 2, 3, 4, 5].map((level) => (
+                          <div
+                            key={level}
+                            className={`w-4 h-4 rounded-full ${
+                              level <= (skill.level || 3)
+                                ? 'bg-sky-700'
+                                : 'bg-gray-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Languages Section */}
+            {cvData.languages && cvData.languages.length > 0 && (
+              <div>
+                <h3 className="text-xl font-bold text-sky-900 mb-4 uppercase border-b-2 border-sky-800 pb-2">
+                  Languages
+                </h3>
+                <div className="space-y-2 text-sm">
+                  {cvData.languages.map((lang, idx) => (
+                    <div key={idx} className="flex justify-between items-center">
+                      <span className="font-semibold text-gray-900">{lang.name}</span>
+                      <span className="text-gray-600">{lang.level}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Right Main Content - White Section */}
-        <div className="w-[65%] p-8 bg-white">
+        <div className="w-[65%] p-8 bg-white border-l-2 border-gray-200">
           {/* Profile Section */}
           {cvData.personalInfo.summary && (
             <div className="mb-6">
