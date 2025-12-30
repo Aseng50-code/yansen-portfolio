@@ -558,17 +558,6 @@ async def reject_payment(
 
 # ==================== CV DOWNLOAD ENDPOINT ====================
 
-class CVData(BaseModel):
-    personalInfo: dict
-    experience: List[dict] = []
-    education: List[dict] = []
-    certificates: List[dict] = []
-    skills: List[dict] = []
-    languages: List[dict] = []
-    profilePhoto: Optional[str] = None
-
-from pydantic import BaseModel as PydanticBaseModel
-
 @api_router.post("/cv/download")
 async def download_cv(
     cv_data: dict,
