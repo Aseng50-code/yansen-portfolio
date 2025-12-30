@@ -556,6 +556,63 @@ async def reject_payment(
     return {"message": "Payment rejected", "payment": payment}
 
 
+# ==================== CV DOWNLOAD ENDPOINT ====================
+
+class CVData(BaseModel):
+    personalInfo: dict
+    experience: List[dict] = []
+    education: List[dict] = []
+    certificates: List[dict] = []
+    skills: List[dict] = []
+    languages: List[dict] = []
+    profilePhoto: Optional[str] = None
+
+from pydantic import BaseModel as PydanticBaseModel
+
+@api_router.post("/cv/download")
+async def download_cv(
+    cv_data: dict,
+    authorization: Optional[str] = Header(None)
+):
+    """Generate and download CV as PDF (requires confirmed payment)"""
+    current_user = get_current_user(authorization)
+    
+    # Check if user has a confirmed payment
+    confirmed_payment = await db.payments.find_one({
+        "userId": current_user["userId"],
+        "status": "confirmed"
+    })
+    
+    if not confirmed_payment:
+        raise HTTPException(
+            status_code=402, 
+            detail="Payment required. Please complete payment to download your CV."
+        )
+    
+    try:
+        # Extract profile photo if provided
+        profile_photo = cv_data.get('profilePhoto')
+        
+        # Generate PDF
+        pdf_buffer = generate_cv_pdf(cv_data, profile_photo)
+        
+        # Get user name for filename
+        personal_info = cv_data.get('personalInfo', {})
+        full_name = personal_info.get('fullName', 'CV').replace(' ', '_')
+        filename = f"{full_name}_Seaman_CV.pdf"
+        
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+    except Exception as e:
+        logger.error(f"PDF generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
+
+
 # ==================== SETTINGS ENDPOINTS ====================
 
 @api_router.get("/settings/payment-info")
