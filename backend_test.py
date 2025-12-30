@@ -118,6 +118,434 @@ class BackendTester:
             print(f"   Details: {details}")
         print()
     
+    def test_get_announcements(self):
+        """Test GET /api/announcements - Fetch all announcements (should return 2 existing announcements)"""
+        try:
+            response = self.session.get(f"{BASE_URL}/announcements")
+            
+            if response.status_code == 200:
+                data = response.json()
+                announcements = data.get("announcements", [])
+                
+                if len(announcements) >= 2:
+                    self.log_test(
+                        "Get All Announcements",
+                        True,
+                        f"Retrieved {len(announcements)} announcements (expected at least 2)",
+                        f"First announcement: {announcements[0].get('title', 'No title')} by {announcements[0].get('authorName', 'Unknown')}"
+                    )
+                else:
+                    self.log_test(
+                        "Get All Announcements",
+                        False,
+                        f"Expected at least 2 announcements, got {len(announcements)}",
+                        f"Announcements: {[a.get('title') for a in announcements]}"
+                    )
+            else:
+                self.log_test(
+                    "Get All Announcements",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                "Get All Announcements",
+                False,
+                f"Request failed: {str(e)}"
+            )
+
+    def test_create_announcement(self):
+        """Test POST /api/announcements - Create new announcement with rich HTML content"""
+        if not self.jwt_token:
+            self.log_test(
+                "Create Announcement",
+                False,
+                "No JWT token available (login failed)"
+            )
+            return
+            
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.jwt_token}",
+                "Content-Type": "application/json"
+            }
+            
+            response = self.session.post(
+                f"{BASE_URL}/announcements",
+                json=SAMPLE_ANNOUNCEMENT_DATA,
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                announcement = data.get("announcement", {})
+                self.created_announcement_id = announcement.get("id")
+                
+                # Verify rich HTML content is preserved
+                body = announcement.get("body", "")
+                has_html_tags = "<h2>" in body and "<strong>" in body and "<ul>" in body
+                
+                if self.created_announcement_id and has_html_tags:
+                    self.log_test(
+                        "Create Announcement",
+                        True,
+                        "Announcement created successfully with rich HTML content preserved",
+                        f"ID: {self.created_announcement_id}, Title: {announcement.get('title')}, HTML preserved: {has_html_tags}"
+                    )
+                else:
+                    issues = []
+                    if not self.created_announcement_id:
+                        issues.append("No announcement ID returned")
+                    if not has_html_tags:
+                        issues.append("HTML content not preserved")
+                    
+                    self.log_test(
+                        "Create Announcement",
+                        False,
+                        "Announcement creation issues",
+                        f"Issues: {', '.join(issues)}"
+                    )
+            else:
+                self.log_test(
+                    "Create Announcement",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                "Create Announcement",
+                False,
+                f"Request failed: {str(e)}"
+            )
+
+    def test_update_announcement(self):
+        """Test PUT /api/announcements/{id} - Update an announcement"""
+        if not self.jwt_token:
+            self.log_test(
+                "Update Announcement",
+                False,
+                "No JWT token available (login failed)"
+            )
+            return
+            
+        if not self.created_announcement_id:
+            self.log_test(
+                "Update Announcement",
+                False,
+                "No announcement ID available (creation failed)"
+            )
+            return
+            
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.jwt_token}",
+                "Content-Type": "application/json"
+            }
+            
+            # Update the announcement with new content
+            updated_data = SAMPLE_ANNOUNCEMENT_DATA.copy()
+            updated_data["title"] = "UPDATED: Chief Engineer Position Available"
+            updated_data["body"] = "<h2>Updated Position Details</h2><p>We are seeking an experienced <strong>Chief Engineer</strong> for our container vessel fleet.</p><p><em>This position has been updated with new requirements.</em></p>"
+            
+            response = self.session.put(
+                f"{BASE_URL}/announcements/{self.created_announcement_id}",
+                json=updated_data,
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                announcement = data.get("announcement", {})
+                
+                title_updated = "UPDATED:" in announcement.get("title", "")
+                body_updated = "updated with new requirements" in announcement.get("body", "")
+                
+                if title_updated and body_updated:
+                    self.log_test(
+                        "Update Announcement",
+                        True,
+                        "Announcement updated successfully",
+                        f"Title: {announcement.get('title')}, Body contains update: {body_updated}"
+                    )
+                else:
+                    self.log_test(
+                        "Update Announcement",
+                        False,
+                        "Announcement update not reflected properly",
+                        f"Title updated: {title_updated}, Body updated: {body_updated}"
+                    )
+            else:
+                self.log_test(
+                    "Update Announcement",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                "Update Announcement",
+                False,
+                f"Request failed: {str(e)}"
+            )
+
+    def test_like_announcement(self):
+        """Test POST /api/announcements/{id}/like - Like an announcement (requires auth)"""
+        if not self.jwt_token:
+            self.log_test(
+                "Like Announcement",
+                False,
+                "No JWT token available (login failed)"
+            )
+            return
+            
+        if not self.created_announcement_id:
+            self.log_test(
+                "Like Announcement",
+                False,
+                "No announcement ID available (creation failed)"
+            )
+            return
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.jwt_token}"}
+            
+            response = self.session.post(
+                f"{BASE_URL}/announcements/{self.created_announcement_id}/like",
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                liked = data.get("liked", False)
+                likes_count = data.get("likes", 0)
+                
+                if "liked" in message.lower() and liked and likes_count > 0:
+                    self.log_test(
+                        "Like Announcement",
+                        True,
+                        "Announcement liked successfully",
+                        f"Message: {message}, Liked: {liked}, Likes count: {likes_count}"
+                    )
+                else:
+                    self.log_test(
+                        "Like Announcement",
+                        False,
+                        "Like functionality not working properly",
+                        f"Message: {message}, Liked: {liked}, Likes: {likes_count}"
+                    )
+            else:
+                self.log_test(
+                    "Like Announcement",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                "Like Announcement",
+                False,
+                f"Request failed: {str(e)}"
+            )
+
+    def test_comment_on_announcement(self):
+        """Test POST /api/announcements/{id}/comment - Add comment to announcement (requires auth)"""
+        if not self.jwt_token:
+            self.log_test(
+                "Comment on Announcement",
+                False,
+                "No JWT token available (login failed)"
+            )
+            return
+            
+        if not self.created_announcement_id:
+            self.log_test(
+                "Comment on Announcement",
+                False,
+                "No announcement ID available (creation failed)"
+            )
+            return
+            
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.jwt_token}",
+                "Content-Type": "application/json"
+            }
+            
+            response = self.session.post(
+                f"{BASE_URL}/announcements/{self.created_announcement_id}/comment",
+                json=SAMPLE_COMMENT_DATA,
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                comment = data.get("comment", {})
+                self.created_comment_id = comment.get("id")
+                
+                if "added successfully" in message and self.created_comment_id:
+                    self.log_test(
+                        "Comment on Announcement",
+                        True,
+                        "Comment added successfully",
+                        f"Comment ID: {self.created_comment_id}, Content: {comment.get('content', '')[:50]}..."
+                    )
+                else:
+                    self.log_test(
+                        "Comment on Announcement",
+                        False,
+                        "Comment creation failed",
+                        f"Message: {message}, Comment ID: {self.created_comment_id}"
+                    )
+            else:
+                self.log_test(
+                    "Comment on Announcement",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                "Comment on Announcement",
+                False,
+                f"Request failed: {str(e)}"
+            )
+
+    def test_get_single_announcement(self):
+        """Test GET /api/announcements/{id} - Get single announcement with comments"""
+        if not self.created_announcement_id:
+            self.log_test(
+                "Get Single Announcement",
+                False,
+                "No announcement ID available (creation failed)"
+            )
+            return
+            
+        try:
+            response = self.session.get(f"{BASE_URL}/announcements/{self.created_announcement_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                announcement = data.get("announcement", {})
+                comments = announcement.get("comments", [])
+                
+                has_title = bool(announcement.get("title"))
+                has_body = bool(announcement.get("body"))
+                has_comments = len(comments) > 0
+                
+                if has_title and has_body:
+                    self.log_test(
+                        "Get Single Announcement",
+                        True,
+                        "Single announcement retrieved successfully",
+                        f"Title: {announcement.get('title')}, Comments: {len(comments)}, Has HTML body: {bool(announcement.get('body'))}"
+                    )
+                else:
+                    self.log_test(
+                        "Get Single Announcement",
+                        False,
+                        "Announcement data incomplete",
+                        f"Has title: {has_title}, Has body: {has_body}, Comments: {len(comments)}"
+                    )
+            else:
+                self.log_test(
+                    "Get Single Announcement",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                "Get Single Announcement",
+                False,
+                f"Request failed: {str(e)}"
+            )
+
+    def test_delete_announcement(self):
+        """Test DELETE /api/announcements/{id} - Delete an announcement"""
+        if not self.jwt_token:
+            self.log_test(
+                "Delete Announcement",
+                False,
+                "No JWT token available (login failed)"
+            )
+            return
+            
+        if not self.created_announcement_id:
+            self.log_test(
+                "Delete Announcement",
+                False,
+                "No announcement ID available (creation failed)"
+            )
+            return
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.jwt_token}"}
+            
+            response = self.session.delete(
+                f"{BASE_URL}/announcements/{self.created_announcement_id}",
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                
+                if "deleted successfully" in message:
+                    self.log_test(
+                        "Delete Announcement",
+                        True,
+                        "Announcement deleted successfully",
+                        f"Message: {message}"
+                    )
+                    
+                    # Verify deletion by trying to get the announcement
+                    verify_response = self.session.get(f"{BASE_URL}/announcements/{self.created_announcement_id}")
+                    if verify_response.status_code == 404:
+                        self.log_test(
+                            "Delete Announcement - Verification",
+                            True,
+                            "Deletion verified - announcement no longer exists",
+                            "GET request returns 404 as expected"
+                        )
+                    else:
+                        self.log_test(
+                            "Delete Announcement - Verification",
+                            False,
+                            f"Announcement still exists after deletion (HTTP {verify_response.status_code})",
+                            verify_response.text
+                        )
+                else:
+                    self.log_test(
+                        "Delete Announcement",
+                        False,
+                        "Unexpected delete response",
+                        f"Message: {message}"
+                    )
+            else:
+                self.log_test(
+                    "Delete Announcement",
+                    False,
+                    f"HTTP {response.status_code}",
+                    response.text
+                )
+                
+        except Exception as e:
+            self.log_test(
+                "Delete Announcement",
+                False,
+                f"Request failed: {str(e)}"
+            )
+
     def test_payment_info_api(self):
         """Test GET /api/settings/payment-info (public API)"""
         try:
